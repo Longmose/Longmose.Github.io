@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Portfolio</title>
     <style>
-        /* Basic Styling for better presentation */
+        /* Basic Styling */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             line-height: 1.6;
@@ -52,10 +52,7 @@
             font-weight: bold;
         }
 
-        input[type="text"],
-        input[type="date"],
-        select,
-        textarea {
+        input[type="text"], input[type="date"], select, textarea {
             width: 100%;
             padding: 10px;
             border: 1px solid #ced4da;
@@ -99,33 +96,53 @@
         #portfolio-list {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 1.5rem;
+            gap: 1rem;
         }
 
+        /* --- STYLES FOR COLLAPSIBLE CARDS --- */
         .portfolio-entry {
             background: #fff;
             border: 1px solid #e9ecef;
             border-radius: 8px;
             padding: 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            overflow-wrap: break-word;
+            overflow: hidden; /* Important for smooth transition */
             position: relative;
         }
 
-            .portfolio-entry h3 {
-                margin-top: 0;
-                color: #0056b3;
-            }
+        .entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .entry-header-info h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #0056b3;
+        }
 
         .entry-meta {
             font-size: 0.9em;
             color: #6c757d;
-            margin-bottom: 15px;
         }
 
             .entry-meta span {
                 margin-right: 15px;
                 font-weight: bold;
+            }
+
+        .entry-details {
+            max-height: 0; /* Hidden by default */
+            overflow: hidden;
+            transition: max-height 0.4s ease-in-out;
+            border-top: 1px solid #e9ecef;
+            margin-top: 15px;
+            padding-top: 15px;
+        }
+
+            .entry-details.expanded {
+                max-height: 2000px; /* A large value to allow content to expand */
             }
 
         .entry-section-title {
@@ -135,11 +152,19 @@
             color: #495057;
         }
 
+        .collapsible-content {
+            display: none; /* Content like code/pictures is hidden */
+            margin-top: 10px;
+        }
+
+            .collapsible-content.visible {
+                display: block; /* And shown on click */
+            }
+
         .portfolio-entry img, .portfolio-entry video {
             max-width: 100%;
             height: auto;
             border-radius: 4px;
-            margin-top: 10px;
         }
 
         pre {
@@ -151,6 +176,21 @@
             word-wrap: break-word;
             font-family: "Fira Code", "Courier New", monospace;
         }
+
+        .toggle-btn {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+            .toggle-btn:hover {
+                background-color: #5a6268;
+            }
 
         .delete-btn {
             position: absolute;
@@ -181,66 +221,24 @@
     </style>
 </head>
 <body>
-
     <main>
         <div class="form-container">
             <h1>Create Entry</h1>
             <form id="portfolio-form">
-                <div class="form-group">
-                    <label for="title">Title</label>
-                    <input type="text" id="title" name="title" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="date">Date</label>
-                    <input type="date" id="date" name="date" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="subject">Subject</label>
-                    <select id="subject" name="subject" required>
-                        <option value="">-- Please choose an option --</option>
-                        <option value="Cyber Security">Cyber Security</option>
-                        <option value="Appudvikling">Appudvikling</option>
-                        <option value="Andet">Andet</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="goal">Goal</label>
-                    <textarea id="goal" name="goal" rows="3" required></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="description">Description</label>
-                    <textarea id="description" name="description" rows="5"></textarea>
-                </div>
-
-                <hr>
-                <h2>Optional Fields</h2>
-
-                <div class="form-group">
-                    <label for="code">Code Snippet</label>
-                    <textarea id="code" name="code" rows="6" placeholder="Paste your code here..."></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="picture">Picture</label>
-                    <input type="file" id="picture" name="picture" accept="image/*">
-                </div>
-
-                <div class="form-group">
-                    <label for="video">Video</label>
-                    <input type="file" id="video" name="video" accept="video/*">
-                </div>
-
+                <div class="form-group"><label for="title">Title</label><input type="text" id="title" name="title" required></div>
+                <div class="form-group"><label for="date">Date</label><input type="date" id="date" name="date" required></div>
+                <div class="form-group"><label for="subject">Subject</label><select id="subject" name="subject" required><option value="">-- Please choose an option --</option><option value="Cyber Security">Cyber Security</option><option value="Appudvikling">Appudvikling</option><option value="Andet">Andet</option></select></div>
+                <div class="form-group"><label for="goal">Goal</label><textarea id="goal" name="goal" rows="3" required></textarea></div>
+                <div class="form-group"><label for="description">Description</label><textarea id="description" name="description" rows="5"></textarea></div>
+                <hr><h2>Optional Fields</h2>
+                <div class="form-group"><label for="code">Code Snippet</label><textarea id="code" name="code" rows="6" placeholder="Paste your code here..."></textarea></div>
+                <div class="form-group"><label for="picture">Picture</label><input type="file" id="picture" name="picture" accept="image/*"></div>
+                <div class="form-group"><label for="video">Video</label><input type="file" id="video" name="video" accept="video/*"></div>
                 <button type="submit">Add Entry to Portfolio</button>
             </form>
         </div>
-
         <div class="portfolio-container">
             <h1>Portfolio Entries</h1>
-
             <div id="filter-controls">
                 <input type="search" id="search-input" placeholder="Search by keyword...">
                 <select id="filter-subject">
@@ -250,9 +248,7 @@
                     <option value="Andet">Andet</option>
                 </select>
             </div>
-
-            <div id="portfolio-list">
-            </div>
+            <div id="portfolio-list"></div>
         </div>
     </main>
 
@@ -274,18 +270,9 @@
 
             const renderEntries = () => {
                 portfolioList.innerHTML = '';
-
                 const searchTerm = searchInput.value.toLowerCase();
                 const selectedSubject = filterSubject.value;
-
-                const filteredEntries = portfolioEntries.filter(entry => {
-                    const matchesSearch = searchTerm === '' ||
-                        entry.title.toLowerCase().includes(searchTerm) ||
-                        entry.goal.toLowerCase().includes(searchTerm) ||
-                        entry.description.toLowerCase().includes(searchTerm);
-                    const matchesSubject = selectedSubject === 'all' || entry.subject === selectedSubject;
-                    return matchesSearch && matchesSubject;
-                }).sort((a, b) => new Date(b.date) - new Date(a.date));
+                const filteredEntries = portfolioEntries.filter(entry => (searchTerm === '' || entry.title.toLowerCase().includes(searchTerm) || entry.goal.toLowerCase().includes(searchTerm) || entry.description.toLowerCase().includes(searchTerm)) && (selectedSubject === 'all' || entry.subject === selectedSubject)).sort((a, b) => new Date(b.date) - new Date(a.date));
 
                 if (filteredEntries.length === 0) {
                     portfolioList.innerHTML = '<p>No entries found. Try adjusting your filters or add a new entry!</p>';
@@ -295,47 +282,76 @@
                 filteredEntries.forEach(entry => {
                     const entryElement = document.createElement('div');
                     entryElement.classList.add('portfolio-entry');
+                    entryElement.setAttribute('data-id', entry.id);
 
+                    // Build the HTML for each card
                     entryElement.innerHTML = `
-                            <button class="delete-btn" data-id="${entry.id}">&times;</button>
-                            <h3>${entry.title}</h3>
-                            <div class="entry-meta">
-                                <span>📅 ${entry.date}</span>
-                                <span>🏷️ ${entry.subject}</span>
+                        <div class="entry-header">
+                            <div class="entry-header-info">
+                                <h3>${entry.title}</h3>
+                                <div class="entry-meta">
+                                    <span>📅 ${entry.date}</span>
+                                    <span>🏷️ ${entry.subject}</span>
+                                </div>
                             </div>
+                            <button class="toggle-btn toggle-details-btn">Show Details</button>
+                        </div>
+                        <div class="entry-details">
                             <div class="entry-section-title">Goal</div>
                             <p>${entry.goal.replace(/\n/g, '<br>')}</p>
                             ${entry.description ? `<div class="entry-section-title">Description</div><p>${entry.description.replace(/\n/g, '<br>')}</p>` : ''}
-                            ${entry.code ? `<div class="entry-section-title">Code Snippet</div><pre><code>${entry.code.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre>` : ''}
-                            ${entry.picture ? `<img src="${entry.picture}" alt="${entry.title} Picture">` : ''}
-                            ${entry.video ? `<video controls src="${entry.video}"></video>` : ''}
-                        `;
+
+                            ${entry.code ? `<button class="toggle-btn toggle-content-btn" data-type="code">Show Code</button><div class="collapsible-content" data-type="code"><pre><code>${entry.code.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre></div>` : ''}
+                            ${entry.picture ? `<button class="toggle-btn toggle-content-btn" data-type="picture">Show Picture</button><div class="collapsible-content" data-type="picture"><img src="${entry.picture}" alt="${entry.title} Picture"></div>` : ''}
+                            ${entry.video ? `<button class="toggle-btn toggle-content-btn" data-type="video">Show Video</button><div class="collapsible-content" data-type="video"><video controls src="${entry.video}"></video></div>` : ''}
+                        </div>
+                        <button class="delete-btn">&times;</button>
+                    `;
                     portfolioList.appendChild(entryElement);
                 });
             };
 
-            const deleteEntry = (id) => {
-                // Ask for confirmation before deleting
-                if (confirm('Are you sure you want to delete this entry?')) {
-                    portfolioEntries = portfolioEntries.filter(entry => entry.id != id);
-                    localStorage.setItem('portfolioEntries', JSON.stringify(portfolioEntries));
-                    renderEntries();
-                }
-            };
+            // --- Main Event Listener for all interactions on the list ---
+            portfolioList.addEventListener('click', (e) => {
+                const target = e.target;
+                const entryElement = target.closest('.portfolio-entry');
+                if (!entryElement) return;
+                const id = entryElement.dataset.id;
 
+                // Handle Deleting an Entry
+                if (target.matches('.delete-btn')) {
+                    if (confirm('Are you sure you want to delete this entry?')) {
+                        portfolioEntries = portfolioEntries.filter(entry => entry.id != id);
+                        localStorage.setItem('portfolioEntries', JSON.stringify(portfolioEntries));
+                        renderEntries();
+                    }
+                }
+
+                // Handle Expanding/Collapsing the main card details
+                if (target.matches('.toggle-details-btn')) {
+                    const details = entryElement.querySelector('.entry-details');
+                    details.classList.toggle('expanded');
+                    target.textContent = details.classList.contains('expanded') ? 'Hide Details' : 'Show Details';
+                }
+
+                // Handle Showing/Hiding specific content (code, picture, video)
+                if (target.matches('.toggle-content-btn')) {
+                    const type = target.dataset.type;
+                    const content = entryElement.querySelector(`.collapsible-content[data-type="${type}"]`);
+                    content.classList.toggle('visible');
+                    target.textContent = content.classList.contains('visible') ? `Hide ${type.charAt(0).toUpperCase() + type.slice(1)}` : `Show ${type.charAt(0).toUpperCase() + type.slice(1)}`;
+                }
+            });
+
+            // --- Form submission logic remains the same ---
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const pictureFile = document.getElementById('picture').files[0];
                 const videoFile = document.getElementById('video').files[0];
 
                 const newEntry = {
-                    id: Date.now(),
-                    title: form.title.value,
-                    date: form.date.value,
-                    subject: form.subject.value,
-                    goal: form.goal.value,
-                    description: form.description.value,
-                    code: form.code.value,
+                    id: Date.now(), title: form.title.value, date: form.date.value, subject: form.subject.value,
+                    goal: form.goal.value, description: form.description.value, code: form.code.value,
                     picture: pictureFile ? await toBase64(pictureFile) : null,
                     video: videoFile ? await toBase64(videoFile) : null
                 };
@@ -347,18 +363,9 @@
                 alert('Portfolio entry added successfully!');
             });
 
-            // Event listener for delete buttons (uses event delegation)
-            portfolioList.addEventListener('click', (e) => {
-                if (e.target.matches('.delete-btn')) {
-                    const id = e.target.dataset.id;
-                    deleteEntry(id);
-                }
-            });
-
             searchInput.addEventListener('input', renderEntries);
             filterSubject.addEventListener('change', renderEntries);
-
-            renderEntries();
+            renderEntries(); // Initial render
         });
     </script>
 </body>
