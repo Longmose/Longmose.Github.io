@@ -53,11 +53,13 @@
                 });
             };
 
+            // -- HELT NY OG ROBUST KLIK-HÅNDTERING --
             portfolioList.addEventListener('click', (e) => {
                 const target = e.target;
                 const entryElement = target.closest('.portfolio-entry');
                 if (!entryElement) return;
 
+                // Håndterer knapper (Vis/Skjul Kode, Rediger osv.)
                 if (target.closest('button, a')) {
                     if (target.matches('.toggle-content-btn')) {
                         const type = target.dataset.type;
@@ -65,29 +67,33 @@
                         const detailsContainer = entryElement.querySelector('.entry-details');
                         const content = detailsContainer.querySelector(`.collapsible-content[data-type="${type}"]`);
 
-                        // -- DEN OPDATEREDE LOGIK ER HER --
+                        // Tjek om vi skal vise eller skjule
+                        const isVisible = content.classList.contains('visible');
 
-                        // Vi gemmer den nuværende højde, FØR vi ændrer noget
-                        const currentHeight = detailsContainer.scrollHeight;
-
-                        // Skift synlighed på indholdet
-                        content.classList.toggle('visible');
-
-                        // Opdater knap-tekst
-                        target.textContent = content.classList.contains('visible') ? `Skjul ${translatedType}` : `Vis ${translatedType}`;
-
-                        // Mål den nye højde, EFTER vi har ændret synligheden
-                        const newHeight = detailsContainer.scrollHeight;
-
-                        // Hvis containeren er åben, animer til den nye højde
-                        // Dette virker nu både for at forøge og formindske højden
-                        if (detailsContainer.style.height !== '0px') {
+                        if (isVisible) {
+                            // SKJUL INDHOLD
+                            const newHeight = detailsContainer.scrollHeight - content.scrollHeight;
                             detailsContainer.style.height = newHeight + 'px';
+                            target.textContent = `Vis ${translatedType}`;
+
+                            // Vent til animationen er færdig, før vi fjerner elementet helt
+                            detailsContainer.addEventListener('transitionend', () => {
+                                content.classList.remove('visible');
+                            }, { once: true }); // 'once: true' fjerner lytteren automatisk
+
+                        } else {
+                            // VIS INDHOLD
+                            // Gør først indholdet synligt, så vi kan måle den nye højde
+                            content.classList.add('visible');
+                            const newHeight = detailsContainer.scrollHeight;
+                            detailsContainer.style.height = newHeight + 'px';
+                            target.textContent = `Skjul ${translatedType}`;
                         }
                     }
                     return;
                 }
 
+                // Håndterer udvid/skjul af hele kortet
                 const details = entryElement.querySelector('.entry-details');
                 if (details.style.height && details.style.height !== '0px') {
                     details.style.height = '0px';
@@ -97,11 +103,12 @@
                 }
             });
 
-            // Resten er uændret
+            // Resten af event listeners er uændrede
             startDateFilter.addEventListener('change', () => { endDateFilter.min = startDateFilter.value; renderEntries(); });
             endDateFilter.addEventListener('change', () => { startDateFilter.max = endDateFilter.value; renderEntries(); });
             searchInput.addEventListener('input', renderEntries);
             filterSubject.addEventListener('change', renderEntries);
+
             renderEntries();
         });
     </script>
