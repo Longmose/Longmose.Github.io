@@ -142,20 +142,16 @@ input[type="date"] {
     margin-top: 10px;
 }
 
+/* UPDATED: Den nye animations-regel */
 .entry-details {
-    max-height: 0;
+    height: 0;
     overflow: hidden;
+    transition: height 0.35s ease-in-out;
     border-top: 1px solid #e9ecef;
     margin-top: 15px;
     padding-top: 15px;
     cursor: default;
-    transition: max-height 0.25s ease-out;
 }
-
-    .entry-details.expanded {
-        max-height: 2000px;
-        transition: max-height 0.4s ease-in;
-    }
 
 .entry-section-title {
     font-weight: bold;
@@ -213,7 +209,7 @@ pre {
 }
 
 .edit-btn {
-    background-color: #6c757d;
+    background-color: #ffc107;
     color: white;
     border: none;
     padding: 5px 10px;
@@ -225,7 +221,7 @@ pre {
 }
 
     .edit-btn:hover {
-        background-color: #5a6268;
+        background-color: #e0a800;
     }
 
 /* Form Styling (create.html & edit.html) */
