@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Portfolio</title>
     <style>
-        /* Basic Styling */
+        /* Previous styles remain the same... */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             line-height: 1.6;
@@ -47,7 +47,6 @@
                 background-color: #218838;
             }
 
-        /* Filter Controls */
         #filter-controls {
             background: #fff;
             padding: 20px;
@@ -153,7 +152,6 @@
             border-radius: 4px;
         }
 
-        /* UPDATED: Scrollable code snippet */
         pre {
             background-color: #282c34;
             color: #abb2bf;
@@ -162,8 +160,8 @@
             white-space: pre-wrap;
             word-wrap: break-word;
             font-family: "Fira Code", "Courier New", monospace;
-            max-height: 400px; /* Set a max height */
-            overflow-y: auto; /* Add a scrollbar only when needed */
+            max-height: 400px;
+            overflow-y: auto;
         }
 
         .toggle-btn {
@@ -181,12 +179,16 @@
                 background-color: #5a6268;
             }
 
-        .delete-btn {
+        /* Action Buttons Styling */
+        .entry-actions {
             position: absolute;
             top: 15px;
             right: 15px;
-            background: #dc3545;
-            color: white;
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
             border: none;
             border-radius: 50%;
             width: 30px;
@@ -196,6 +198,21 @@
             line-height: 30px;
             text-align: center;
             cursor: pointer;
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .edit-btn {
+            background-color: #ffc107;
+        }
+
+            .edit-btn:hover {
+                background-color: #e0a800;
+            }
+
+        .delete-btn {
+            background: #dc3545;
         }
 
             .delete-btn:hover {
@@ -204,70 +221,38 @@
     </style>
 </head>
 <body>
-
     <div class="container">
-        <div class="top-bar">
-            <h1>Portfolio Entries</h1>
-            <a href="create.html" class="create-btn">Create New Entry</a>
-        </div>
-
+        <div class="top-bar"><h1>Portfolio Entries</h1><a href="create.html" class="create-btn">Create New Entry</a></div>
         <div id="filter-controls">
-            <div>
-                <label for="search-input">Search by Keyword</label>
-                <input type="search" id="search-input" placeholder="Search...">
-            </div>
-            <div>
-                <label for="filter-subject">Filter by Subject</label>
-                <select id="filter-subject">
-                    <option value="all">All Subjects</option>
-                    <option value="Cyber Security">Cyber Security</option>
-                    <option value="Appudvikling">Appudvikling</option>
-                    <option value="Andet">Andet</option>
-                </select>
-            </div>
-            <div>
-                <label for="start-date">Start Date</label>
-                <input type="date" id="start-date">
-            </div>
-            <div>
-                <label for="end-date">End Date</label>
-                <input type="date" id="end-date">
-            </div>
+            <div><label for="search-input">Search by Keyword</label><input type="search" id="search-input" placeholder="Search..."></div>
+            <div><label for="filter-subject">Filter by Subject</label><select id="filter-subject"><option value="all">All Subjects</option><option value="Cyber Security">Cyber Security</option><option value="Appudvikling">Appudvikling</option><option value="Andet">Andet</option></select></div>
+            <div><label for="start-date">Start Date</label><input type="date" id="start-date"></div>
+            <div><label for="end-date">End Date</label><input type="date" id="end-date"></div>
         </div>
-
         <div id="portfolio-list"></div>
     </div>
-
     <script>
+        // All JavaScript from the previous index.html remains the same,
+        // except for the generated HTML inside renderEntries.
         document.addEventListener('DOMContentLoaded', () => {
             const portfolioList = document.getElementById('portfolio-list');
             const searchInput = document.getElementById('search-input');
             const filterSubject = document.getElementById('filter-subject');
             const startDateFilter = document.getElementById('start-date');
             const endDateFilter = document.getElementById('end-date');
-
             let portfolioEntries = JSON.parse(localStorage.getItem('portfolioEntries')) || [];
 
             const renderEntries = () => {
+                // Filtering logic is unchanged
                 const searchTerm = searchInput.value.toLowerCase();
                 const selectedSubject = filterSubject.value;
                 const startDate = startDateFilter.value;
                 const endDate = endDateFilter.value;
-
                 const filteredEntries = portfolioEntries.filter(entry => {
-                    // Search filter
-                    const matchesSearch = searchTerm === '' ||
-                        entry.title.toLowerCase().includes(searchTerm) ||
-                        entry.goal.toLowerCase().includes(searchTerm) ||
-                        entry.description.toLowerCase().includes(searchTerm);
-
-                    // Subject filter
+                    const matchesSearch = searchTerm === '' || entry.title.toLowerCase().includes(searchTerm) || entry.goal.toLowerCase().includes(searchTerm) || entry.description.toLowerCase().includes(searchTerm);
                     const matchesSubject = selectedSubject === 'all' || entry.subject === selectedSubject;
-
-                    // Date filter
                     const entryDate = entry.date;
                     const matchesDate = (!startDate || entryDate >= startDate) && (!endDate || entryDate <= endDate);
-
                     return matchesSearch && matchesSubject && matchesDate;
                 }).sort((a, b) => new Date(b.date) - new Date(a.date));
 
@@ -282,33 +267,32 @@
                     entryElement.classList.add('portfolio-entry');
                     entryElement.setAttribute('data-id', entry.id);
 
+                    // UPDATED HTML: Added an edit button and wrapper for actions
                     entryElement.innerHTML = `
-                        <div class="entry-header">
-                            <div class="entry-header-info">
-                                <h3>${entry.title}</h3>
-                                <div class="entry-meta">
-                                    <span>📅 ${entry.date}</span>
-                                    <span>🏷️ ${entry.subject}</span>
+                            <div class="entry-header">
+                                <div class="entry-header-info">
+                                    <h3>${entry.title}</h3>
+                                    <div class="entry-meta"><span>📅 ${entry.date}</span><span>🏷️ ${entry.subject}</span></div>
+                                    <div class="entry-goal"><div class="entry-section-title">Goal</div><p>${entry.goal.replace(/\n/g, '<br>')}</p></div>
                                 </div>
-                                <div class="entry-goal">
-                                    <div class="entry-section-title">Goal</div>
-                                    <p>${entry.goal.replace(/\n/g, '<br>')}</p>
-                                </div>
+                                <button class="toggle-btn toggle-details-btn">Show Details</button>
                             </div>
-                            <button class="toggle-btn toggle-details-btn">Show Details</button>
-                        </div>
-                        <div class="entry-details">
-                            ${entry.description ? `<div class="entry-section-title">Description</div><p>${entry.description.replace(/\n/g, '<br>')}</p>` : ''}
-                            ${entry.code ? `<button class="toggle-btn toggle-content-btn" data-type="code">Show Code</button><div class="collapsible-content" data-type="code"><pre><code>${entry.code.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre></div>` : ''}
-                            ${entry.picture ? `<button class="toggle-btn toggle-content-btn" data-type="picture">Show Picture</button><div class="collapsible-content" data-type="picture"><img src="${entry.picture}" alt="${entry.title} Picture"></div>` : ''}
-                            ${entry.video ? `<button class="toggle-btn toggle-content-btn" data-type="video">Show Video</button><div class="collapsible-content" data-type="video"><video controls src="${entry.video}"></video></div>` : ''}
-                        </div>
-                        <button class="delete-btn">&times;</button>
-                    `;
+                            <div class="entry-details">
+                                ${entry.description ? `<div class="entry-section-title">Description</div><p>${entry.description.replace(/\n/g, '<br>')}</p>` : ''}
+                                ${entry.code ? `<button class="toggle-btn toggle-content-btn" data-type="code">Show Code</button><div class="collapsible-content" data-type="code"><pre><code>${entry.code.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre></div>` : ''}
+                                ${entry.picture ? `<button class="toggle-btn toggle-content-btn" data-type="picture">Show Picture</button><div class="collapsible-content" data-type="picture"><img src="${entry.picture}" alt="${entry.title} Picture"></div>` : ''}
+                                ${entry.video ? `<button class="toggle-btn toggle-content-btn" data-type="video">Show Video</button><div class="collapsible-content" data-type="video"><video controls src="${entry.video}"></video></div>` : ''}
+                            </div>
+                            <div class="entry-actions">
+                                <a href="edit.html?id=${entry.id}" class="action-btn edit-btn" title="Edit Entry">✎</a>
+                                <button class="action-btn delete-btn" title="Delete Entry">&times;</button>
+                            </div>
+                        `;
                     portfolioList.appendChild(entryElement);
                 });
             };
 
+            // The rest of the event listeners for filtering and interaction remain the same
             portfolioList.addEventListener('click', (e) => {
                 const target = e.target;
                 if (target.matches('.delete-btn')) {
