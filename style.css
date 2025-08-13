@@ -212,7 +212,7 @@ pre {
 }
 
 .edit-btn {
-    background-color: #ffc107;
+    background-color: #6c757d;
     color: white;
     border: none;
     padding: 5px 10px;
@@ -224,7 +224,7 @@ pre {
 }
 
     .edit-btn:hover {
-        background-color: #e0a800;
+        background-color: #5a6268;
     }
 
 /* Form Styling (create.html & edit.html) */
