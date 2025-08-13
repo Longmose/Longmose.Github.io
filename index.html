@@ -35,8 +35,11 @@
                     const matchesDate = (!startDate || entry.date >= startDate) && (!endDate || entry.date <= endDate);
                     return matchesSearch && matchesSubject && matchesDate;
                 };
+
                 const filteredEntries = portfolioEntries.filter(filteringLogic).sort((a, b) => new Date(b.date) - new Date(a.date));
+
                 portfolioList.innerHTML = filteredEntries.length === 0 ? '<p>Ingen indlæg fundet, der matcher dine kriterier.</p>' : '';
+
                 filteredEntries.forEach(entry => {
                     const entryElement = document.createElement('div');
                     entryElement.classList.add('portfolio-entry');
@@ -55,7 +58,6 @@
                 const entryElement = target.closest('.portfolio-entry');
                 if (!entryElement) return;
 
-                // Håndterer knapper inde i kortet (Vis Kode, Rediger osv.)
                 if (target.closest('button, a')) {
                     if (target.matches('.toggle-content-btn')) {
                         const type = target.dataset.type;
@@ -63,23 +65,16 @@
                         const detailsContainer = entryElement.querySelector('.entry-details');
                         const content = detailsContainer.querySelector(`.collapsible-content[data-type="${type}"]`);
 
-                        // Skift synlighed på indholdet
                         content.classList.toggle('visible');
-
-                        // Opdater knap-tekst
                         target.textContent = content.classList.contains('visible') ? `Skjul ${translatedType}` : `Vis ${translatedType}`;
 
-                        // -- DEN NYE RETTELSE --
-                        // Genberegn højden på containeren for at give plads til det nye indhold.
-                        // Vi tjekker, at containeren er åben, før vi justerer højden.
                         if (detailsContainer.style.height !== '0px') {
                             detailsContainer.style.height = detailsContainer.scrollHeight + 'px';
                         }
                     }
-                    return; // Stop videre behandling
+                    return;
                 }
 
-                // Håndterer selve udvid/skjul-animationen af hele kortet
                 const details = entryElement.querySelector('.entry-details');
                 if (details.style.height && details.style.height !== '0px') {
                     details.style.height = '0px';
@@ -89,7 +84,6 @@
                 }
             });
 
-            // Resten af event listeners er uændrede
             startDateFilter.addEventListener('change', () => { endDateFilter.min = startDateFilter.value; renderEntries(); });
             endDateFilter.addEventListener('change', () => { startDateFilter.max = endDateFilter.value; renderEntries(); });
             searchInput.addEventListener('input', renderEntries);
