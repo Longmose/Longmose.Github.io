@@ -1,9 +1,9 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="da">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create New Portfolio Entry</title>
+    <title>Opret Nyt Portfolio-indlæg</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -47,10 +47,6 @@
             font-weight: bold;
         }
 
-            .back-link:hover {
-                text-decoration: underline;
-            }
-
         .form-group {
             margin-bottom: 15px;
         }
@@ -67,6 +63,11 @@
             border: 1px solid #ced4da;
             border-radius: 4px;
             box-sizing: border-box;
+        }
+        /* UPDATED: Prevents horizontal resizing */
+        textarea {
+            resize: vertical;
+            min-height: 80px;
         }
 
         button[type="submit"] {
@@ -86,69 +87,47 @@
     </style>
 </head>
 <body>
-
     <div class="container">
         <div class="form-container">
-            <div class="form-header">
-                <h1>Create Entry</h1>
-                <a href="index.html" class="back-link">← Back to Portfolio</a>
-            </div>
+            <div class="form-header"><h1>Opret Indlæg</h1><a href="index.html" class="back-link">← Tilbage til Portfolio</a></div>
             <form id="portfolio-form">
-                <div class="form-group"><label for="title">Title</label><input type="text" id="title" name="title" required></div>
-                <div class="form-group"><label for="date">Date</label><input type="date" id="date" name="date" required></div>
-                <div class="form-group"><label for="subject">Subject</label><select id="subject" name="subject" required><option value="">-- Please choose an option --</option><option value="Cyber Security">Cyber Security</option><option value="Appudvikling">Appudvikling</option><option value="Andet">Andet</option></select></div>
-                <div class="form-group"><label for="goal">Goal</label><textarea id="goal" name="goal" rows="3" required></textarea></div>
-                <div class="form-group"><label for="description">Description</label><textarea id="description" name="description" rows="5"></textarea></div>
-                <hr>
-                <h2>Optional Fields</h2>
-                <div class="form-group"><label for="code">Code Snippet</label><textarea id="code" name="code" rows="6" placeholder="Paste your code here..."></textarea></div>
-                <div class="form-group"><label for="picture">Picture</label><input type="file" id="picture" name="picture" accept="image/*"></div>
+                <div class="form-group"><label for="title">Titel</label><input type="text" id="title" name="title" required></div>
+                <div class="form-group"><label for="date">Dato</label><input type="date" id="date" name="date" required></div>
+                <div class="form-group"><label for="subject">Emne</label><select id="subject" name="subject" required><option value="">-- Vælg et emne --</option><option value="Cyber Security">Cyber Security</option><option value="Appudvikling">Appudvikling</option><option value="Andet">Andet</option></select></div>
+                <div class="form-group"><label for="goal">Mål</label><textarea id="goal" name="goal" rows="3" required></textarea></div>
+                <div class="form-group"><label for="description">Beskrivelse</label><textarea id="description" name="description" rows="5"></textarea></div>
+                <hr><h2>Valgfrie Felter</h2>
+                <div class="form-group"><label for="code">Kodestykke</label><textarea id="code" name="code" rows="6" placeholder="Indsæt din kode her..."></textarea></div>
+                <div class="form-group"><label for="picture">Billede</label><input type="file" id="picture" name="picture" accept="image/*"></div>
                 <div class="form-group"><label for="video">Video</label><input type="file" id="video" name="video" accept="video/*"></div>
-                <button type="submit">Add Entry to Portfolio</button>
+                <button type="submit">Tilføj Indlæg til Portfolio</button>
             </form>
         </div>
     </div>
-
-    <script>document.addEventListener('DOMContentLoaded', () => {
-            const form = document.getElementById('portfolio-form');
-
+    <script>
+        document.getElementById('portfolio-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
             const toBase64 = file => new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
                 reader.onload = () => resolve(reader.result);
                 reader.onerror = error => reject(error);
             });
-
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-
-                // Get existing entries from localStorage, or start with an empty array
-                const portfolioEntries = JSON.parse(localStorage.getItem('portfolioEntries')) || [];
-
-                const pictureFile = document.getElementById('picture').files[0];
-                const videoFile = document.getElementById('video').files[0];
-
-                const newEntry = {
-                    id: Date.now(),
-                    title: form.title.value,
-                    date: form.date.value,
-                    subject: form.subject.value,
-                    goal: form.goal.value,
-                    description: form.description.value,
-                    code: form.code.value,
-                    picture: pictureFile ? await toBase64(pictureFile) : null,
-                    video: videoFile ? await toBase64(videoFile) : null
-                };
-
-                // Add the new entry and save back to localStorage
-                portfolioEntries.push(newEntry);
-                localStorage.setItem('portfolioEntries', JSON.stringify(portfolioEntries));
-
-                alert('Portfolio entry added successfully!');
-
-                // Redirect back to the main page
-                window.location.href = 'index.html';
-            });
-        });</script>
+            const portfolioEntries = JSON.parse(localStorage.getItem('portfolioEntries')) || [];
+            const pictureFile = document.getElementById('picture').files[0];
+            const videoFile = document.getElementById('video').files[0];
+            const newEntry = {
+                id: Date.now(), title: form.title.value, date: form.date.value, subject: form.subject.value,
+                goal: form.goal.value, description: form.description.value, code: form.code.value,
+                picture: pictureFile ? await toBase64(pictureFile) : null,
+                video: videoFile ? await toBase64(videoFile) : null
+            };
+            portfolioEntries.push(newEntry);
+            localStorage.setItem('portfolioEntries', JSON.stringify(portfolioEntries));
+            alert('Portfolio-indlæg tilføjet!');
+            window.location.href = 'index.html';
+        });
+    </script>
 </body>
 </html>

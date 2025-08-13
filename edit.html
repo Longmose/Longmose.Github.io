@@ -1,11 +1,10 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="da">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Portfolio Entry</title>
+    <title>Rediger Portfolio-indlæg</title>
     <style>
-        /* Styles mostly the same... */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             line-height: 1.6;
@@ -65,6 +64,11 @@
             border-radius: 4px;
             box-sizing: border-box;
         }
+        /* UPDATED: Prevents horizontal resizing */
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
 
         .current-file {
             font-size: 0.9em;
@@ -72,7 +76,6 @@
             margin-top: 5px;
         }
 
-        /* UPDATED: Different styles for different buttons */
         .form-actions {
             margin-top: 20px;
             display: flex;
@@ -111,22 +114,21 @@
 <body>
     <div class="container">
         <div class="form-container">
-            <div class="form-header"><h1>Edit Entry</h1><a href="index.html" class="back-link">← Cancel</a></div>
+            <div class="form-header"><h1>Rediger Indlæg</h1><a href="index.html" class="back-link">← Annuller og gå tilbage</a></div>
             <form id="portfolio-form">
-                <div class="form-group"><label for="title">Title</label><input type="text" id="title" name="title" required></div>
-                <div class="form-group"><label for="date">Date</label><input type="date" id="date" name="date" required></div>
-                <div class="form-group"><label for="subject">Subject</label><select id="subject" name="subject" required><option value="">-- Please choose an option --</option><option value="Cyber Security">Cyber Security</option><option value="Appudvikling">Appudvikling</option><option value="Andet">Andet</option></select></div>
-                <div class="form-group"><label for="goal">Goal</label><textarea id="goal" name="goal" rows="3" required></textarea></div>
-                <div class="form-group"><label for="description">Description</label><textarea id="description" name="description" rows="5"></textarea></div>
-                <hr><h2>Optional Fields</h2>
-                <div class="form-group"><label for="code">Code Snippet</label><textarea id="code" name="code" rows="6"></textarea></div>
-                <div class="form-group"><label for="picture">Picture</label><input type="file" id="picture" accept="image/*"><div id="current-picture" class="current-file"></div></div>
+                <div class="form-group"><label for="title">Titel</label><input type="text" id="title" name="title" required></div>
+                <div class="form-group"><label for="date">Dato</label><input type="date" id="date" name="date" required></div>
+                <div class="form-group"><label for="subject">Emne</label><select id="subject" name="subject" required><option value="">-- Vælg et emne --</option><option value="Cyber Security">Cyber Security</option><option value="Appudvikling">Appudvikling</option><option value="Andet">Andet</option></select></div>
+                <div class="form-group"><label for="goal">Mål</label><textarea id="goal" name="goal" rows="3" required></textarea></div>
+                <div class="form-group"><label for="description">Beskrivelse</label><textarea id="description" name="description" rows="5"></textarea></div>
+                <hr><h2>Valgfrie Felter</h2>
+                <div class="form-group"><label for="code">Kodestykke</label><textarea id="code" name="code" rows="6"></textarea></div>
+                <div class="form-group"><label for="picture">Billede</label><input type="file" id="picture" accept="image/*"><div id="current-picture" class="current-file"></div></div>
                 <div class="form-group"><label for="video">Video</label><input type="file" id="video" accept="video/*"><div id="current-video" class="current-file"></div></div>
-
             </form>
             <div class="form-actions">
-                <button id="save-changes-btn" class="action-button save-btn">Save Changes</button>
-                <button id="delete-entry-btn" class="action-button delete-btn">Delete Entry</button>
+                <button id="save-changes-btn" class="action-button save-btn">Gem Ændringer</button>
+                <button id="delete-entry-btn" class="action-button delete-btn">Slet Indlæg</button>
             </div>
         </div>
     </div>
@@ -135,27 +137,25 @@
             const form = document.getElementById('portfolio-form');
             const saveBtn = document.getElementById('save-changes-btn');
             const deleteBtn = document.getElementById('delete-entry-btn');
-
             const portfolioEntries = JSON.parse(localStorage.getItem('portfolioEntries')) || [];
             const params = new URLSearchParams(window.location.search);
             const entryId = parseInt(params.get('id'), 10);
             const entryToEdit = portfolioEntries.find(entry => entry.id === entryId);
 
             if (!entryToEdit) {
-                alert('Entry not found!');
+                alert('Indlæg ikke fundet!');
                 window.location.href = 'index.html';
                 return;
             }
 
-            // Pre-fill form logic is unchanged
             form.title.value = entryToEdit.title;
             form.date.value = entryToEdit.date;
             form.subject.value = entryToEdit.subject;
             form.goal.value = entryToEdit.goal;
             form.description.value = entryToEdit.description || '';
             form.code.value = entryToEdit.code || '';
-            if (entryToEdit.picture) document.getElementById('current-picture').textContent = 'A picture is currently set. Choose a new file to replace it.';
-            if (entryToEdit.video) document.getElementById('current-video').textContent = 'A video is currently set. Choose a new file to replace it.';
+            if (entryToEdit.picture) document.getElementById('current-picture').textContent = 'Et billede er allerede valgt. Vælg en ny fil for at erstatte det.';
+            if (entryToEdit.video) document.getElementById('current-video').textContent = 'En video er allerede valgt. Vælg en ny fil for at erstatte den.';
 
             const toBase64 = file => new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -164,37 +164,29 @@
                 reader.onerror = error => reject(error);
             });
 
-            // Event listener for the SAVE button
             saveBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
-
                 const pictureFile = document.getElementById('picture').files[0];
                 const videoFile = document.getElementById('video').files[0];
                 const entryIndex = portfolioEntries.findIndex(entry => entry.id === entryId);
-
                 const updatedEntry = {
-                    id: entryToEdit.id,
-                    title: form.title.value, date: form.date.value, subject: form.subject.value,
+                    id: entryToEdit.id, title: form.title.value, date: form.date.value, subject: form.subject.value,
                     goal: form.goal.value, description: form.description.value, code: form.code.value,
                     picture: pictureFile ? await toBase64(pictureFile) : entryToEdit.picture,
                     video: videoFile ? await toBase64(videoFile) : entryToEdit.video
                 };
-
                 portfolioEntries[entryIndex] = updatedEntry;
                 localStorage.setItem('portfolioEntries', JSON.stringify(portfolioEntries));
-                alert('Entry updated successfully!');
+                alert('Indlæg opdateret!');
                 window.location.href = 'index.html';
             });
 
-            // Event listener for the DELETE button
             deleteBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-
-                // Added an extra confirmation for safety
-                if (confirm('Are you absolutely sure you want to permanently delete this entry? This cannot be undone.')) {
+                if (confirm('Er du helt sikker på, at du vil slette dette indlæg permanent? Handlingen kan ikke fortrydes.')) {
                     const updatedEntries = portfolioEntries.filter(entry => entry.id !== entryId);
                     localStorage.setItem('portfolioEntries', JSON.stringify(updatedEntries));
-                    alert('Entry has been deleted.');
+                    alert('Indlægget er blevet slettet.');
                     window.location.href = 'index.html';
                 }
             });
