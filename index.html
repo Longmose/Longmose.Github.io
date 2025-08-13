@@ -65,11 +65,24 @@
                         const detailsContainer = entryElement.querySelector('.entry-details');
                         const content = detailsContainer.querySelector(`.collapsible-content[data-type="${type}"]`);
 
+                        // -- DEN OPDATEREDE LOGIK ER HER --
+
+                        // Vi gemmer den nuværende højde, FØR vi ændrer noget
+                        const currentHeight = detailsContainer.scrollHeight;
+
+                        // Skift synlighed på indholdet
                         content.classList.toggle('visible');
+
+                        // Opdater knap-tekst
                         target.textContent = content.classList.contains('visible') ? `Skjul ${translatedType}` : `Vis ${translatedType}`;
 
+                        // Mål den nye højde, EFTER vi har ændret synligheden
+                        const newHeight = detailsContainer.scrollHeight;
+
+                        // Hvis containeren er åben, animer til den nye højde
+                        // Dette virker nu både for at forøge og formindske højden
                         if (detailsContainer.style.height !== '0px') {
-                            detailsContainer.style.height = detailsContainer.scrollHeight + 'px';
+                            detailsContainer.style.height = newHeight + 'px';
                         }
                     }
                     return;
@@ -84,11 +97,11 @@
                 }
             });
 
+            // Resten er uændret
             startDateFilter.addEventListener('change', () => { endDateFilter.min = startDateFilter.value; renderEntries(); });
             endDateFilter.addEventListener('change', () => { startDateFilter.max = endDateFilter.value; renderEntries(); });
             searchInput.addEventListener('input', renderEntries);
             filterSubject.addEventListener('change', renderEntries);
-
             renderEntries();
         });
     </script>
