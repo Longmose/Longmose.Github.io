@@ -8,16 +8,8 @@
 </head>
 <body>
     <div class="container">
-        <div class="top-bar">
-            <h1>Portfolio-indlæg</h1>
-            <a href="create.html" class="create-btn">Opret Nyt Indlæg</a>
-        </div>
-        <div id="filter-controls">
-            <div><label for="search-input">Søg</label><input type="search" id="search-input" placeholder="Indtast søgeord"></div>
-            <div><label for="filter-subject">Filtrér efter fag</label><select id="filter-subject"><option value="all">Alle fag</option><option value="Cyber Security">Cyber Security</option><option value="Appudvikling">Appudvikling</option><option value="Andet">Andet</option></select></div>
-            <div><label for="start-date">Startdato</label><input type="date" id="start-date"></div>
-            <div><label for="end-date">Slutdato</label><input type="date" id="end-date"></div>
-        </div>
+        <div class="top-bar"><h1>Portfolio-indlæg</h1><a href="create.html" class="create-btn">Opret Nyt Indlæg</a></div>
+        <div id="filter-controls"><div><label for="search-input">Søg</label><input type="search" id="search-input" placeholder="Indtast søgeord"></div><div><label for="filter-subject">Filtrér efter fag</label><select id="filter-subject"><option value="all">Alle fag</option><option value="Cyber Security">Cyber Security</option><option value="Appudvikling">Appudvikling</option><option value="Andet">Andet</option></select></div><div><label for="start-date">Startdato</label><input type="date" id="start-date"></div><div><label for="end-date">Slutdato</label><input type="date" id="end-date"></div></div>
         <div id="portfolio-list"></div>
     </div>
 
@@ -43,63 +35,61 @@
                     const matchesDate = (!startDate || entry.date >= startDate) && (!endDate || entry.date <= endDate);
                     return matchesSearch && matchesSubject && matchesDate;
                 };
-
                 const filteredEntries = portfolioEntries.filter(filteringLogic).sort((a, b) => new Date(b.date) - new Date(a.date));
-
                 portfolioList.innerHTML = filteredEntries.length === 0 ? '<p>Ingen indlæg fundet, der matcher dine kriterier.</p>' : '';
-
                 filteredEntries.forEach(entry => {
                     const entryElement = document.createElement('div');
                     entryElement.classList.add('portfolio-entry');
                     entryElement.setAttribute('data-id', entry.id);
                     entryElement.innerHTML = `
-                            <div class="entry-header">
-                                <div class="entry-header-info">
-                                    <h3>${entry.title}</h3>
-                                    <div class="entry-meta"><span>📅 ${formatDate(entry.date)}</span><span>${getSubjectIcon(entry.subject)} ${entry.subject}</span></div>
-                                    <div class="entry-goal"><div class="entry-section-title">Mål</div><p>${entry.goal.replace(/\n/g, '<br>')}</p></div>
-                                </div>
-                            </div>
-                            <div class="entry-details">
-                                ${entry.description ? `<div class="entry-section-title">Beskrivelse</div><p>${entry.description.replace(/\n/g, '<br>')}</p>` : ''}
-                                ${entry.code ? `<button class="toggle-btn toggle-content-btn" data-type="code">Vis ${typeTranslations.code}</button><div class="collapsible-content" data-type="code"><pre><code>${entry.code.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre></div>` : ''}
-                                ${entry.picture ? `<button class="toggle-btn toggle-content-btn" data-type="picture">Vis ${typeTranslations.picture}</button><div class="collapsible-content" data-type="picture"><img src="${entry.picture}" alt="${entry.title} Picture"></div>` : ''}
-                                ${entry.video ? `<button class="toggle-btn toggle-content-btn" data-type="video">Vis ${typeTranslations.video}</button><div class="collapsible-content" data-type="video"><video controls src="${entry.video}"></video></div>` : ''}
-                            </div>
+                            <div class="entry-header"><div class="entry-header-info"><h3>${entry.title}</h3><div class="entry-meta"><span>📅 ${formatDate(entry.date)}</span><span>${getSubjectIcon(entry.subject)} ${entry.subject}</span></div><div class="entry-goal"><div class="entry-section-title">Mål</div><p>${entry.goal.replace(/\n/g, '<br>')}</p></div></div></div>
+                            <div class="entry-details">${entry.description ? `<div class="entry-section-title">Beskrivelse</div><p>${entry.description.replace(/\n/g, '<br>')}</p>` : ''}${entry.code ? `<button class="toggle-btn toggle-content-btn" data-type="code">Vis ${typeTranslations.code}</button><div class="collapsible-content" data-type="code"><pre><code>${entry.code.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre></div>` : ''}${entry.picture ? `<button class="toggle-btn toggle-content-btn" data-type="picture">Vis ${typeTranslations.picture}</button><div class="collapsible-content" data-type="picture"><img src="${entry.picture}" alt="${entry.title} Picture"></div>` : ''}${entry.video ? `<button class="toggle-btn toggle-content-btn" data-type="video">Vis ${typeTranslations.video}</button><div class="collapsible-content" data-type="video"><video controls src="${entry.video}"></video></div>` : ''}</div>
                             <div class="entry-actions"><a href="edit.html?id=${entry.id}" class="edit-btn" title="Rediger Indlæg">Rediger</a></div>
                         `;
                     portfolioList.appendChild(entryElement);
                 });
             };
 
-            // UPDATED: Den nye og forbedrede klik-håndtering
             portfolioList.addEventListener('click', (e) => {
                 const target = e.target;
+                const entryElement = target.closest('.portfolio-entry');
+                if (!entryElement) return;
 
+                // Håndterer knapper inde i kortet (Vis Kode, Rediger osv.)
                 if (target.closest('button, a')) {
                     if (target.matches('.toggle-content-btn')) {
                         const type = target.dataset.type;
                         const translatedType = typeTranslations[type] || type;
-                        const content = target.closest('.portfolio-entry').querySelector(`.collapsible-content[data-type="${type}"]`);
+                        const detailsContainer = entryElement.querySelector('.entry-details');
+                        const content = detailsContainer.querySelector(`.collapsible-content[data-type="${type}"]`);
+
+                        // Skift synlighed på indholdet
                         content.classList.toggle('visible');
+
+                        // Opdater knap-tekst
                         target.textContent = content.classList.contains('visible') ? `Skjul ${translatedType}` : `Vis ${translatedType}`;
+
+                        // -- DEN NYE RETTELSE --
+                        // Genberegn højden på containeren for at give plads til det nye indhold.
+                        // Vi tjekker, at containeren er åben, før vi justerer højden.
+                        if (detailsContainer.style.height !== '0px') {
+                            detailsContainer.style.height = detailsContainer.scrollHeight + 'px';
+                        }
                     }
-                    return;
+                    return; // Stop videre behandling
                 }
 
-                const entryElement = target.closest('.portfolio-entry');
-                if (entryElement) {
-                    const details = entryElement.querySelector('.entry-details');
-
-                    if (details.style.height && details.style.height !== '0px') {
-                        details.style.height = '0px';
-                    } else {
-                        const scrollHeight = details.scrollHeight;
-                        details.style.height = scrollHeight + 'px';
-                    }
+                // Håndterer selve udvid/skjul-animationen af hele kortet
+                const details = entryElement.querySelector('.entry-details');
+                if (details.style.height && details.style.height !== '0px') {
+                    details.style.height = '0px';
+                } else {
+                    const scrollHeight = details.scrollHeight;
+                    details.style.height = scrollHeight + 'px';
                 }
             });
 
+            // Resten af event listeners er uændrede
             startDateFilter.addEventListener('change', () => { endDateFilter.min = startDateFilter.value; renderEntries(); });
             endDateFilter.addEventListener('change', () => { startDateFilter.max = endDateFilter.value; renderEntries(); });
             searchInput.addEventListener('input', renderEntries);
