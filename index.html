@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Min Portfolio</title>
     <style>
-        /* Forrige styles er uændrede... */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             line-height: 1.6;
@@ -68,7 +67,6 @@
                 box-sizing: border-box;
             }
 
-        /* UPDATED: Smart CSS til at vise korrekt dato-placeholder */
         input[type="date"] {
             position: relative;
         }
@@ -76,10 +74,10 @@
             input[type="date"]::-webkit-datetime-edit-fields-wrapper {
                 text-align: left;
             }
-            /* Justerer tekstens placering */
+
             input[type="date"]:not(:valid)::before {
                 content: "dd-mm-åååå";
-                color: #6c757d; /* Farven på pladsholder-teksten */
+                color: #6c757d;
                 position: absolute;
                 left: 10px;
                 top: 10px;
@@ -183,6 +181,7 @@
             overflow-y: auto;
         }
 
+        /* -- UPDATED STYLES FOR BUTTONS -- */
         .toggle-btn {
             background-color: #6c757d;
             color: white;
@@ -194,29 +193,26 @@
             margin-top: 5px;
         }
 
+            .toggle-btn:hover {
+                background-color: #5a6268;
+            }
+
         .entry-actions {
             position: absolute;
             top: 15px;
             right: 15px;
         }
 
-        .action-btn {
-            border: none;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            font-weight: bold;
-            font-size: 16px;
-            line-height: 30px;
-            text-align: center;
-            cursor: pointer;
-            color: white;
-            text-decoration: none;
-            display: inline-block;
-        }
-
         .edit-btn {
             background-color: #ffc107;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
         }
 
             .edit-btn:hover {
@@ -239,7 +235,6 @@
         <div id="portfolio-list"></div>
     </div>
     <script>
-        // JavaScript er uændret, da sortering allerede var implementeret
         document.addEventListener('DOMContentLoaded', () => {
             const portfolioList = document.getElementById('portfolio-list');
             const searchInput = document.getElementById('search-input');
@@ -253,6 +248,16 @@
                 const [year, month, day] = dateString.split('-');
                 return `${day}/${month}/${year}`;
             };
+
+            const getSubjectIcon = (subject) => {
+                switch (subject) {
+                    case 'Cyber Security': return '🛡️';
+                    case 'Appudvikling': return '📱';
+                    default: return '🏷️';
+                }
+            };
+
+            const typeTranslations = { code: 'Kode', picture: 'Billede', video: 'Video' };
 
             const renderEntries = () => {
                 const filteringLogic = entry => {
@@ -274,22 +279,29 @@
                     const entryElement = document.createElement('div');
                     entryElement.classList.add('portfolio-entry');
                     entryElement.setAttribute('data-id', entry.id);
+
+                    // UPDATED: 'edit-btn' is now in its own wrapper in the top right
                     entryElement.innerHTML = `
-                            <div class="entry-header">
-                                <div class="entry-header-info">
-                                    <h3>${entry.title}</h3>
-                                    <div class="entry-meta"><span>📅 ${formatDate(entry.date)}</span><span>🏷️ ${entry.subject}</span></div>
-                                    <div class="entry-goal"><div class="entry-section-title">Mål</div><p>${entry.goal.replace(/\n/g, '<br>')}</p></div>
+                        <div class="entry-header">
+                            <div class="entry-header-info">
+                                <h3>${entry.title}</h3>
+                                <div class="entry-meta">
+                                    <span>📅 ${formatDate(entry.date)}</span>
+                                    <span>${getSubjectIcon(entry.subject)} ${entry.subject}</span>
                                 </div>
+                                <div class="entry-goal"><div class="entry-section-title">Mål</div><p>${entry.goal.replace(/\n/g, '<br>')}</p></div>
                             </div>
-                            <div class="entry-details">
-                                ${entry.description ? `<div class="entry-section-title">Beskrivelse</div><p>${entry.description.replace(/\n/g, '<br>')}</p>` : ''}
-                                ${entry.code ? `<button class="toggle-btn toggle-content-btn" data-type="code">Vis Kode</button><div class="collapsible-content" data-type="code"><pre><code>${entry.code.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre></div>` : ''}
-                                ${entry.picture ? `<button class="toggle-btn toggle-content-btn" data-type="picture">Vis Billede</button><div class="collapsible-content" data-type="picture"><img src="${entry.picture}" alt="${entry.title} Picture"></div>` : ''}
-                                ${entry.video ? `<button class="toggle-btn toggle-content-btn" data-type="video">Vis Video</button><div class="collapsible-content" data-type="video"><video controls src="${entry.video}"></video></div>` : ''}
-                            </div>
-                            <div class="entry-actions"><a href="edit.html?id=${entry.id}" class="action-btn edit-btn" title="Rediger Indlæg">✎</a></div>
-                        `;
+                        </div>
+                        <div class="entry-details">
+                            ${entry.description ? `<div class="entry-section-title">Beskrivelse</div><p>${entry.description.replace(/\n/g, '<br>')}</p>` : ''}
+                            ${entry.code ? `<button class="toggle-btn toggle-content-btn" data-type="code">Vis ${typeTranslations.code}</button><div class="collapsible-content" data-type="code"><pre><code>${entry.code.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre></div>` : ''}
+                            ${entry.picture ? `<button class="toggle-btn toggle-content-btn" data-type="picture">Vis ${typeTranslations.picture}</button><div class="collapsible-content" data-type="picture"><img src="${entry.picture}" alt="${entry.title} Picture"></div>` : ''}
+                            ${entry.video ? `<button class="toggle-btn toggle-content-btn" data-type="video">Vis ${typeTranslations.video}</button><div class="collapsible-content" data-type="video"><video controls src="${entry.video}"></video></div>` : ''}
+                        </div>
+                        <div class="entry-actions">
+                            <a href="edit.html?id=${entry.id}" class="edit-btn" title="Rediger Indlæg">Rediger</a>
+                        </div>
+                    `;
                     portfolioList.appendChild(entryElement);
                 });
             };
@@ -299,10 +311,10 @@
                 if (target.closest('button, a')) {
                     if (target.matches('.toggle-content-btn')) {
                         const type = target.dataset.type;
-                        const content = target.closest('.entry-details').querySelector(`.collapsible-content[data-type="${type}"]`);
+                        const translatedType = typeTranslations[type] || type;
+                        const content = target.closest('.portfolio-entry').querySelector(`.collapsible-content[data-type="${type}"]`);
                         content.classList.toggle('visible');
-                        const typeCapitalized = type.charAt(0).toUpperCase() + type.slice(1);
-                        target.textContent = content.classList.contains('visible') ? `Skjul ${typeCapitalized}` : `Vis ${typeCapitalized}`;
+                        target.textContent = content.classList.contains('visible') ? `Skjul ${translatedType}` : `Vis ${translatedType}`;
                     }
                     return;
                 }
@@ -312,15 +324,8 @@
                 }
             });
 
-            startDateFilter.addEventListener('change', () => {
-                endDateFilter.min = startDateFilter.value;
-                renderEntries();
-            });
-            endDateFilter.addEventListener('change', () => {
-                startDateFilter.max = endDateFilter.value;
-                renderEntries();
-            });
-
+            startDateFilter.addEventListener('change', () => { endDateFilter.min = startDateFilter.value; renderEntries(); });
+            endDateFilter.addEventListener('change', () => { startDateFilter.max = endDateFilter.value; renderEntries(); });
             searchInput.addEventListener('input', renderEntries);
             filterSubject.addEventListener('change', renderEntries);
             renderEntries();
