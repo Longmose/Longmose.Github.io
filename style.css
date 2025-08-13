@@ -145,15 +145,16 @@ input[type="date"] {
 .entry-details {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.4s ease-in-out;
     border-top: 1px solid #e9ecef;
     margin-top: 15px;
     padding-top: 15px;
     cursor: default;
+    transition: max-height 0.25s ease-out;
 }
 
     .entry-details.expanded {
         max-height: 2000px;
+        transition: max-height 0.4s ease-in;
     }
 
 .entry-section-title {
