@@ -4,221 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Min Portfolio</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            line-height: 1.6;
-            background-color: #f8f9fa;
-            color: #212529;
-            margin: 0;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: auto;
-        }
-
-        h1 {
-            border-bottom: 2px solid #007bff;
-            padding-bottom: 10px;
-            color: #343a40;
-        }
-
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .create-btn {
-            background-color: #28a745;
-            color: white;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-        }
-
-        #filter-controls {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-            #filter-controls label {
-                display: block;
-                font-weight: bold;
-                font-size: 0.9em;
-                margin-bottom: 5px;
-            }
-
-            #filter-controls input, #filter-controls select {
-                width: 100%;
-                padding: 10px;
-                border: 1px solid #ced4da;
-                border-radius: 4px;
-                box-sizing: border-box;
-            }
-
-        input[type="date"] {
-            position: relative;
-        }
-
-            input[type="date"]::-webkit-datetime-edit-fields-wrapper {
-                text-align: left;
-            }
-
-            input[type="date"]:not(:valid)::before {
-                content: "dd-mm-åååå";
-                color: #6c757d;
-                position: absolute;
-                left: 10px;
-                top: 10px;
-            }
-
-        #portfolio-list {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1rem;
-        }
-
-        .portfolio-entry {
-            background: #fff;
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            overflow: hidden;
-            position: relative;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-            .portfolio-entry:hover {
-                background-color: #fdfdfd;
-            }
-
-        .entry-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 1rem;
-        }
-
-        .entry-header-info h3 {
-            margin-top: 0;
-            margin-bottom: 10px;
-            color: #0056b3;
-        }
-
-        .entry-meta {
-            font-size: 0.9em;
-            color: #6c757d;
-            margin-bottom: 15px;
-        }
-
-            .entry-meta span {
-                margin-right: 15px;
-                font-weight: bold;
-            }
-
-        .entry-goal {
-            margin-top: 10px;
-        }
-
-        .entry-details {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.4s ease-in-out;
-            border-top: 1px solid #e9ecef;
-            margin-top: 15px;
-            padding-top: 15px;
-            cursor: default;
-        }
-
-            .entry-details.expanded {
-                max-height: 2000px;
-            }
-
-        .entry-section-title {
-            font-weight: bold;
-            margin-top: 15px;
-            margin-bottom: 5px;
-            color: #495057;
-        }
-
-        .collapsible-content {
-            display: none;
-            margin-top: 10px;
-        }
-
-            .collapsible-content.visible {
-                display: block;
-            }
-
-        .portfolio-entry img, .portfolio-entry video {
-            max-width: 100%;
-            height: auto;
-            border-radius: 4px;
-        }
-
-        pre {
-            background-color: #282c34;
-            color: #abb2bf;
-            padding: 15px;
-            border-radius: 5px;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            font-family: "Fira Code", "Courier New", monospace;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        /* -- UPDATED STYLES FOR BUTTONS -- */
-        .toggle-btn {
-            background-color: #6c757d;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            margin-top: 5px;
-        }
-
-            .toggle-btn:hover {
-                background-color: #5a6268;
-            }
-
-        .entry-actions {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-        }
-
-        .edit-btn {
-            background-color: #ffc107;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-            .edit-btn:hover {
-                background-color: #e0a800;
-            }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
@@ -234,7 +20,10 @@
         </div>
         <div id="portfolio-list"></div>
     </div>
-    <script>
+
+    <script type="module">
+        import { formatDate, getSubjectIcon, typeTranslations } from './main.js';
+
         document.addEventListener('DOMContentLoaded', () => {
             const portfolioList = document.getElementById('portfolio-list');
             const searchInput = document.getElementById('search-input');
@@ -242,22 +31,6 @@
             const startDateFilter = document.getElementById('start-date');
             const endDateFilter = document.getElementById('end-date');
             let portfolioEntries = JSON.parse(localStorage.getItem('portfolioEntries')) || [];
-
-            const formatDate = (dateString) => {
-                if (!dateString) return '';
-                const [year, month, day] = dateString.split('-');
-                return `${day}/${month}/${year}`;
-            };
-
-            const getSubjectIcon = (subject) => {
-                switch (subject) {
-                    case 'Cyber Security': return '🛡️';
-                    case 'Appudvikling': return '📱';
-                    default: return '🏷️';
-                }
-            };
-
-            const typeTranslations = { code: 'Kode', picture: 'Billede', video: 'Video' };
 
             const renderEntries = () => {
                 const filteringLogic = entry => {
@@ -279,29 +52,22 @@
                     const entryElement = document.createElement('div');
                     entryElement.classList.add('portfolio-entry');
                     entryElement.setAttribute('data-id', entry.id);
-
-                    // UPDATED: 'edit-btn' is now in its own wrapper in the top right
                     entryElement.innerHTML = `
-                        <div class="entry-header">
-                            <div class="entry-header-info">
-                                <h3>${entry.title}</h3>
-                                <div class="entry-meta">
-                                    <span>📅 ${formatDate(entry.date)}</span>
-                                    <span>${getSubjectIcon(entry.subject)} ${entry.subject}</span>
+                            <div class="entry-header">
+                                <div class="entry-header-info">
+                                    <h3>${entry.title}</h3>
+                                    <div class="entry-meta"><span>📅 ${formatDate(entry.date)}</span><span>${getSubjectIcon(entry.subject)} ${entry.subject}</span></div>
+                                    <div class="entry-goal"><div class="entry-section-title">Mål</div><p>${entry.goal.replace(/\n/g, '<br>')}</p></div>
                                 </div>
-                                <div class="entry-goal"><div class="entry-section-title">Mål</div><p>${entry.goal.replace(/\n/g, '<br>')}</p></div>
                             </div>
-                        </div>
-                        <div class="entry-details">
-                            ${entry.description ? `<div class="entry-section-title">Beskrivelse</div><p>${entry.description.replace(/\n/g, '<br>')}</p>` : ''}
-                            ${entry.code ? `<button class="toggle-btn toggle-content-btn" data-type="code">Vis ${typeTranslations.code}</button><div class="collapsible-content" data-type="code"><pre><code>${entry.code.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre></div>` : ''}
-                            ${entry.picture ? `<button class="toggle-btn toggle-content-btn" data-type="picture">Vis ${typeTranslations.picture}</button><div class="collapsible-content" data-type="picture"><img src="${entry.picture}" alt="${entry.title} Picture"></div>` : ''}
-                            ${entry.video ? `<button class="toggle-btn toggle-content-btn" data-type="video">Vis ${typeTranslations.video}</button><div class="collapsible-content" data-type="video"><video controls src="${entry.video}"></video></div>` : ''}
-                        </div>
-                        <div class="entry-actions">
-                            <a href="edit.html?id=${entry.id}" class="edit-btn" title="Rediger Indlæg">Rediger</a>
-                        </div>
-                    `;
+                            <div class="entry-details">
+                                ${entry.description ? `<div class="entry-section-title">Beskrivelse</div><p>${entry.description.replace(/\n/g, '<br>')}</p>` : ''}
+                                ${entry.code ? `<button class="toggle-btn toggle-content-btn" data-type="code">Vis ${typeTranslations.code}</button><div class="collapsible-content" data-type="code"><pre><code>${entry.code.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre></div>` : ''}
+                                ${entry.picture ? `<button class="toggle-btn toggle-content-btn" data-type="picture">Vis ${typeTranslations.picture}</button><div class="collapsible-content" data-type="picture"><img src="${entry.picture}" alt="${entry.title} Picture"></div>` : ''}
+                                ${entry.video ? `<button class="toggle-btn toggle-content-btn" data-type="video">Vis ${typeTranslations.video}</button><div class="collapsible-content" data-type="video"><video controls src="${entry.video}"></video></div>` : ''}
+                            </div>
+                            <div class="entry-actions"><a href="edit.html?id=${entry.id}" class="edit-btn" title="Rediger Indlæg">Rediger</a></div>
+                        `;
                     portfolioList.appendChild(entryElement);
                 });
             };
