@@ -48,8 +48,8 @@ hr {
         background-color: #218838;
     }
 
-/* Filter Kontroller (index.html) */
-#filter-controls {
+/* Filter & Backup Kontroller */
+#filter-controls, #backup-controls {
     background: #fff;
     padding: 20px;
     border-radius: 8px;
@@ -60,21 +60,56 @@ hr {
     margin-bottom: 1.5rem;
 }
 
-    #filter-controls label {
-        display: block;
-        font-weight: bold;
-        font-size: 0.9em;
-        margin-bottom: 5px;
+/* NYT: Specifik styling for backup-sektionen */
+#backup-controls {
+    grid-template-columns: 1fr 2fr;
+    align-items: center;
+}
+
+    #backup-controls h2 {
+        margin: 0;
+        border: none;
+        padding: 0;
+        font-size: 1.2em;
+        grid-column: 1 / -1;
     }
 
-    #filter-controls input,
-    #filter-controls select {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #ced4da;
-        border-radius: 4px;
-        box-sizing: border-box;
+#import-form {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+#filter-controls label {
+    display: block;
+    font-weight: bold;
+    font-size: 0.9em;
+    margin-bottom: 5px;
+}
+
+#filter-controls input,
+#filter-controls select,
+#backup-controls button,
+#backup-controls input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 14px;
+}
+
+#backup-controls button {
+    cursor: pointer;
+    background-color: #17a2b8;
+    color: white;
+    font-weight: bold;
+}
+
+    #backup-controls button:hover {
+        background-color: #138496;
     }
+/* -- Slut på ny styling -- */
 
 input[type="date"] {
     position: relative;
@@ -142,7 +177,6 @@ input[type="date"] {
     margin-top: 10px;
 }
 
-/* UPDATED: Den nye animations-regel */
 .entry-details {
     height: 0;
     overflow: hidden;

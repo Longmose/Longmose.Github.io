@@ -10,6 +10,18 @@
     <div class="container">
         <div class="top-bar"><h1>Portfolio-indlæg</h1><a href="create.html" class="create-btn">Opret Nyt Indlæg</a></div>
         <div id="filter-controls"><div><label for="search-input">Søg</label><input type="search" id="search-input" placeholder="Indtast søgeord"></div><div><label for="filter-subject">Filtrér efter fag</label><select id="filter-subject"><option value="all">Alle fag</option><option value="Cyber Security">Cyber Security</option><option value="Appudvikling">Appudvikling</option><option value="Andet">Andet</option></select></div><div><label for="start-date">Startdato</label><input type="date" id="start-date"></div><div><label for="end-date">Slutdato</label><input type="date" id="end-date"></div></div>
+
+        <div id="backup-controls">
+            <h2>Backup af Data</h2>
+            <div>
+                <button id="export-btn">Eksporter Alle Indlæg</button>
+            </div>
+            <div id="import-form">
+                <input type="file" id="import-file" accept=".json">
+                <button id="import-btn">Importer Fra Fil</button>
+            </div>
+        </div>
+
         <div id="portfolio-list"></div>
     </div>
 
@@ -22,6 +34,12 @@
             const filterSubject = document.getElementById('filter-subject');
             const startDateFilter = document.getElementById('start-date');
             const endDateFilter = document.getElementById('end-date');
+
+            // NYT: Backup/Restore elementer
+            const exportBtn = document.getElementById('export-btn');
+            const importBtn = document.getElementById('import-btn');
+            const importFile = document.getElementById('import-file');
+
             let portfolioEntries = JSON.parse(localStorage.getItem('portfolioEntries')) || [];
 
             const renderEntries = () => {
@@ -35,11 +53,8 @@
                     const matchesDate = (!startDate || entry.date >= startDate) && (!endDate || entry.date <= endDate);
                     return matchesSearch && matchesSubject && matchesDate;
                 };
-
                 const filteredEntries = portfolioEntries.filter(filteringLogic).sort((a, b) => new Date(b.date) - new Date(a.date));
-
                 portfolioList.innerHTML = filteredEntries.length === 0 ? '<p>Ingen indlæg fundet, der matcher dine kriterier.</p>' : '';
-
                 filteredEntries.forEach(entry => {
                     const entryElement = document.createElement('div');
                     entryElement.classList.add('portfolio-entry');
@@ -57,25 +72,18 @@
                 const target = e.target;
                 const entryElement = target.closest('.portfolio-entry');
                 if (!entryElement) return;
-
                 if (target.closest('button, a')) {
                     if (target.matches('.toggle-content-btn')) {
                         const type = target.dataset.type;
                         const translatedType = typeTranslations[type] || type;
                         const detailsContainer = entryElement.querySelector('.entry-details');
                         const content = detailsContainer.querySelector(`.collapsible-content[data-type="${type}"]`);
-
                         const isVisible = content.classList.contains('visible');
-
                         if (isVisible) {
                             const newHeight = detailsContainer.scrollHeight - content.scrollHeight;
                             detailsContainer.style.height = newHeight + 'px';
                             target.textContent = `Vis ${translatedType}`;
-
-                            detailsContainer.addEventListener('transitionend', () => {
-                                content.classList.remove('visible');
-                            }, { once: true });
-
+                            detailsContainer.addEventListener('transitionend', () => { content.classList.remove('visible'); }, { once: true });
                         } else {
                             content.classList.add('visible');
                             const newHeight = detailsContainer.scrollHeight;
@@ -85,7 +93,6 @@
                     }
                     return;
                 }
-
                 const details = entryElement.querySelector('.entry-details');
                 if (details.style.height && details.style.height !== '0px') {
                     details.style.height = '0px';
@@ -95,11 +102,53 @@
                 }
             });
 
+            // NYT: JAVASCRIPT TIL BACKUP
+            exportBtn.addEventListener('click', () => {
+                if (portfolioEntries.length === 0) {
+                    alert('Der er ingen indlæg at eksportere.');
+                    return;
+                }
+                const dataStr = JSON.stringify(portfolioEntries, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                const today = new Date().toISOString().slice(0, 10); // Format: YYYY-MM-DD
+                link.download = `portfolio_backup_${today}.json`;
+                link.href = url;
+                link.click();
+                URL.revokeObjectURL(url);
+                alert('Dine indlæg bliver nu downloadet som en JSON-fil.');
+            });
+
+            importBtn.addEventListener('click', () => {
+                if (importFile.files.length === 0) {
+                    alert('Vælg venligst en .json-fil først.');
+                    return;
+                }
+                const file = importFile.files[0];
+                const reader = new FileReader();
+
+                reader.onload = (event) => {
+                    try {
+                        const jsonContent = event.target.result;
+                        JSON.parse(jsonContent);
+
+                        if (confirm('Er du sikker? Dette vil overskrive alle dine nuværende indlæg med indholdet fra filen.')) {
+                            localStorage.setItem('portfolioEntries', jsonContent);
+                            location.reload();
+                        }
+                    } catch (error) {
+                        alert('Fejl: Den valgte fil er ikke en valid JSON-fil.');
+                    }
+                };
+                reader.readAsText(file);
+            });
+
+            // Resten er uændret
             startDateFilter.addEventListener('change', () => { endDateFilter.min = startDateFilter.value; renderEntries(); });
             endDateFilter.addEventListener('change', () => { startDateFilter.max = endDateFilter.value; renderEntries(); });
             searchInput.addEventListener('input', renderEntries);
             filterSubject.addEventListener('change', renderEntries);
-
             renderEntries();
         });
     </script>
