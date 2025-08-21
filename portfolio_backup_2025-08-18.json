@@ -1,0 +1,35 @@
+[
+  {
+    "id": 1755097868271,
+    "title": "Portfolio opstart",
+    "date": "2025-08-13",
+    "subject": "Andet",
+    "goal": "Oprette en portfolio til personligt brug",
+    "description": "Jeg gør brug af github pages til at oprette en side, hvorpå jeg vil kunne dokumentere min fremgang. Deriblandt forskellige problemstillinger og deres løsning, generel vidensforøgelse og fremgang ift læringsmål.\nDette gør jeg for at have et overblik over at jeg gør fremskridt, og for at have et opslagsværk til senere brug.",
+    "code": "",
+    "picture": null,
+    "video": null
+  },
+  {
+    "id": 1755527471084,
+    "title": "Afklaring og indgrænsning af emner",
+    "date": "2025-08-18",
+    "subject": "Cyber Security",
+    "goal": "Få afklaring af hvilke emner jeg vil berøre inden for It Sikkerhed",
+    "description": "Jeg har udforsket muligheder for at angribe emnet It-sikkerhed, med et perspektiv i appudvikling. Det virker begrænset ift. at skulle bygge ekstra viden på min eksisterende viden om it-sikkerhed. Jeg er dog sikker på at der kommer noget, og indtil da er jeg interesseret i at lære teori bag OWASP top 10 og OWASP mobile top 10.",
+    "code": "",
+    "picture": null,
+    "video": null
+  },
+  {
+    "id": 1755527917080,
+    "title": "Valg a framework",
+    "date": "2025-08-18",
+    "subject": "Appudvikling",
+    "goal": "Fastsætte hvilket framework/sprog jeg vil skrive appen i.",
+    "description": "Jeg har, baseret på anbefalinger, taget udgangspunkt i at undersøge Flutter, og sammenligne det med andre muligheder.\nFlutters indbyggede render engine giver mulighed for at bygge native til alle primære platforme, uden brug af en bridge til at fungere som translation layer.\nFlutter opbygges ved at bruge nestede widgets og skrives i Dart.\nAlt i alt har jeg besluttet at bruge Flutter.",
+    "code": "// Flutter Example\n\n// main.dart\n\nimport 'package:flutter/material.dart';\n\nvoid main() {\n  runApp(const MyApp());\n}\n\nclass MyApp extends StatelessWidget {\n  const MyApp({super.key});\n\n  @override\n  Widget build(BuildContext context) {\n    return MaterialApp(\n      home: Scaffold(          // The main page widget\n        body: Center(          // The invisible layout widget\n          child: Text(         // The visible text widget\n            'Welcome!',\n            style: TextStyle(fontSize: 24), // Even style is configured here\n          ),\n        ),\n      ),\n    );\n  }\n}",
+    "picture": null,
+    "video": null
+  }
+]
