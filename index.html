@@ -34,13 +34,19 @@
             const filterSubject = document.getElementById('filter-subject');
             const startDateFilter = document.getElementById('start-date');
             const endDateFilter = document.getElementById('end-date');
+            let portfolioEntries = [];
 
-            // NYT: Backup/Restore elementer
-            const exportBtn = document.getElementById('export-btn');
-            const importBtn = document.getElementById('import-btn');
-            const importFile = document.getElementById('import-file');
+            const apiBaseUrl = 'http://<YOUR_PI_IP_ADDRESS>:3000/api';
 
-            let portfolioEntries = JSON.parse(localStorage.getItem('portfolioEntries')) || [];
+            const fetchEntries = async () => {
+                try {
+                    const response = await fetch(`${apiBaseUrl}/posts`);
+                    portfolioEntries = await response.json();
+                    renderEntries();
+                } catch (error) {
+                    portfolioList.innerHTML = '<p>Error loading portfolio entries. Make sure the backend is running.</p>';
+                }
+            };
 
             const renderEntries = () => {
                 const filteringLogic = entry => {
@@ -48,22 +54,41 @@
                     const selectedSubject = filterSubject.value;
                     const startDate = startDateFilter.value;
                     const endDate = endDateFilter.value;
-                    const matchesSearch = searchTerm === '' || entry.title.toLowerCase().includes(searchTerm) || entry.goal.toLowerCase().includes(searchTerm) || entry.description.toLowerCase().includes(searchTerm);
+                    const matchesSearch = searchTerm === '' || entry.title.toLowerCase().includes(searchTerm) || entry.goal.toLowerCase().includes(searchTerm) || (entry.description && entry.description.toLowerCase().includes(searchTerm));
                     const matchesSubject = selectedSubject === 'all' || entry.subject === selectedSubject;
-                    const matchesDate = (!startDate || entry.date >= startDate) && (!endDate || entry.date <= endDate);
+                    const entryDate = new Date(entry.date).toISOString().split('T')[0];
+                    const matchesDate = (!startDate || entryDate >= startDate) && (!endDate || entryDate <= endDate);
                     return matchesSearch && matchesSubject && matchesDate;
                 };
+
                 const filteredEntries = portfolioEntries.filter(filteringLogic).sort((a, b) => new Date(b.date) - new Date(a.date));
                 portfolioList.innerHTML = filteredEntries.length === 0 ? '<p>Ingen indlæg fundet, der matcher dine kriterier.</p>' : '';
+
                 filteredEntries.forEach(entry => {
                     const entryElement = document.createElement('div');
                     entryElement.classList.add('portfolio-entry');
                     entryElement.setAttribute('data-id', entry.id);
                     entryElement.innerHTML = `
-                            <div class="entry-header"><div class="entry-header-info"><h3>${entry.title}</h3><div class="entry-meta"><span>📅 ${formatDate(entry.date)}</span><span>${getSubjectIcon(entry.subject)} ${entry.subject}</span></div><div class="entry-goal"><div class="entry-section-title">Mål</div><p>${entry.goal.replace(/\n/g, '<br>')}</p></div></div></div>
-                            <div class="entry-details">${entry.description ? `<div class="entry-section-title">Beskrivelse</div><p>${entry.description.replace(/\n/g, '<br>')}</p>` : ''}${entry.code ? `<button class="toggle-btn toggle-content-btn" data-type="code">Vis ${typeTranslations.code}</button><div class="collapsible-content" data-type="code"><pre><code>${entry.code.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre></div>` : ''}${entry.picture ? `<button class="toggle-btn toggle-content-btn" data-type="picture">Vis ${typeTranslations.picture}</button><div class="collapsible-content" data-type="picture"><img src="${entry.picture}" alt="${entry.title} Picture"></div>` : ''}${entry.video ? `<button class="toggle-btn toggle-content-btn" data-type="video">Vis ${typeTranslations.video}</button><div class="collapsible-content" data-type="video"><video controls src="${entry.video}"></video></div>` : ''}</div>
-                            <div class="entry-actions"><a href="edit.html?id=${entry.id}" class="edit-btn" title="Rediger Indlæg">Rediger</a></div>
-                        `;
+                        <div class="entry-header">
+                            <div class="entry-header-info">
+                                <h3>${entry.title}</h3>
+                                <div class="entry-meta">
+                                    <span>📅 ${formatDate(new Date(entry.date).toISOString().split('T')[0])}</span>
+                                    <span>${getSubjectIcon(entry.subject)} ${entry.subject}</span>
+                                </div>
+                                <div class="entry-goal">
+                                    <div class="entry-section-title">Mål</div>
+                                    <p>${entry.goal.replace(/\n/g, '<br>')}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="entry-details">
+                            ${entry.description ? `<div class="entry-section-title">Beskrivelse</div><p>${entry.description.replace(/\n/g, '<br>')}</p>` : ''}
+                            ${entry.code ? `<button class="toggle-btn toggle-content-btn" data-type="code">Vis ${typeTranslations.code}</button><div class="collapsible-content" data-type="code"><pre><code>${entry.code.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre></div>` : ''}
+                            ${entry.picture ? `<button class="toggle-btn toggle-content-btn" data-type="picture">Vis ${typeTranslations.picture}</button><div class="collapsible-content" data-type="picture"><img src="${entry.picture}" alt="${entry.title} Picture"></div>` : ''}
+                            ${entry.video ? `<button class="toggle-btn toggle-content-btn" data-type="video">Vis ${typeTranslations.video}</button><div class="collapsible-content" data-type="video"><video controls src="${entry.video}"></video></div>` : ''}
+                        </div>
+                        <div class="entry-actions"><a href="edit.html?id=${entry.id}" class="edit-btn" title="Rediger Indlæg">Rediger</a></div>`;
                     portfolioList.appendChild(entryElement);
                 });
             };
@@ -72,84 +97,31 @@
                 const target = e.target;
                 const entryElement = target.closest('.portfolio-entry');
                 if (!entryElement) return;
-                if (target.closest('button, a')) {
-                    if (target.matches('.toggle-content-btn')) {
-                        const type = target.dataset.type;
-                        const translatedType = typeTranslations[type] || type;
-                        const detailsContainer = entryElement.querySelector('.entry-details');
-                        const content = detailsContainer.querySelector(`.collapsible-content[data-type="${type}"]`);
-                        const isVisible = content.classList.contains('visible');
-                        if (isVisible) {
-                            const newHeight = detailsContainer.scrollHeight - content.scrollHeight;
-                            detailsContainer.style.height = newHeight + 'px';
-                            target.textContent = `Vis ${translatedType}`;
-                            detailsContainer.addEventListener('transitionend', () => { content.classList.remove('visible'); }, { once: true });
-                        } else {
-                            content.classList.add('visible');
-                            const newHeight = detailsContainer.scrollHeight;
-                            detailsContainer.style.height = newHeight + 'px';
-                            target.textContent = `Skjul ${translatedType}`;
-                        }
-                    }
+
+                if (target.closest('.toggle-content-btn')) {
+                    const type = target.dataset.type;
+                    const content = entryElement.querySelector(`.collapsible-content[data-type="${type}"]`);
+                    content.classList.toggle('visible');
+                    target.textContent = content.classList.contains('visible') ? `Skjul ${typeTranslations[type]}` : `Vis ${typeTranslations[type]}`;
                     return;
                 }
-                const details = entryElement.querySelector('.entry-details');
-                if (details.style.height && details.style.height !== '0px') {
-                    details.style.height = '0px';
-                } else {
-                    const scrollHeight = details.scrollHeight;
-                    details.style.height = scrollHeight + 'px';
+
+                if (!target.closest('a, button')) {
+                    const details = entryElement.querySelector('.entry-details');
+                    const isExpanded = details.style.height && details.style.height !== '0px';
+                    details.style.height = isExpanded ? '0px' : `${details.scrollHeight}px`;
                 }
             });
 
-            // NYT: JAVASCRIPT TIL BACKUP
-            exportBtn.addEventListener('click', () => {
-                if (portfolioEntries.length === 0) {
-                    alert('Der er ingen indlæg at eksportere.');
-                    return;
-                }
-                const dataStr = JSON.stringify(portfolioEntries, null, 2);
-                const dataBlob = new Blob([dataStr], { type: 'application/json' });
-                const url = URL.createObjectURL(dataBlob);
-                const link = document.createElement('a');
-                const today = new Date().toISOString().slice(0, 10); // Format: YYYY-MM-DD
-                link.download = `portfolio_backup_${today}.json`;
-                link.href = url;
-                link.click();
-                URL.revokeObjectURL(url);
-                alert('Dine indlæg bliver nu downloadet som en JSON-fil.');
-            });
+            const backupControls = document.getElementById('backup-controls');
+            if (backupControls) backupControls.style.display = 'none';
 
-            importBtn.addEventListener('click', () => {
-                if (importFile.files.length === 0) {
-                    alert('Vælg venligst en .json-fil først.');
-                    return;
-                }
-                const file = importFile.files[0];
-                const reader = new FileReader();
-
-                reader.onload = (event) => {
-                    try {
-                        const jsonContent = event.target.result;
-                        JSON.parse(jsonContent);
-
-                        if (confirm('Er du sikker? Dette vil overskrive alle dine nuværende indlæg med indholdet fra filen.')) {
-                            localStorage.setItem('portfolioEntries', jsonContent);
-                            location.reload();
-                        }
-                    } catch (error) {
-                        alert('Fejl: Den valgte fil er ikke en valid JSON-fil.');
-                    }
-                };
-                reader.readAsText(file);
-            });
-
-            // Resten er uændret
-            startDateFilter.addEventListener('change', () => { endDateFilter.min = startDateFilter.value; renderEntries(); });
-            endDateFilter.addEventListener('change', () => { startDateFilter.max = endDateFilter.value; renderEntries(); });
+            startDateFilter.addEventListener('change', renderEntries);
+            endDateFilter.addEventListener('change', renderEntries);
             searchInput.addEventListener('input', renderEntries);
             filterSubject.addEventListener('change', renderEntries);
-            renderEntries();
+
+            fetchEntries();
         });
     </script>
 </body>

@@ -31,19 +31,32 @@
         document.getElementById('portfolio-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const form = e.target;
-            const portfolioEntries = JSON.parse(localStorage.getItem('portfolioEntries')) || [];
-            const pictureFile = document.getElementById('picture').files[0];
-            const videoFile = document.getElementById('video').files[0];
             const newEntry = {
-                id: Date.now(), title: form.title.value, date: form.date.value, subject: form.subject.value,
-                goal: form.goal.value, description: form.description.value, code: form.code.value,
-                picture: pictureFile ? await toBase64(pictureFile) : null,
-                video: videoFile ? await toBase64(videoFile) : null
+                title: form.title.value,
+                date: form.date.value,
+                subject: form.subject.value,
+                goal: form.goal.value,
+                description: form.description.value,
+                code: form.code.value,
+                picture: form.picture.files[0] ? await toBase64(form.picture.files[0]) : null,
+                video: form.video.files[0] ? await toBase64(form.video.files[0]) : null
             };
-            portfolioEntries.push(newEntry);
-            localStorage.setItem('portfolioEntries', JSON.stringify(portfolioEntries));
-            alert('Portfolio-indlæg tilføjet!');
-            window.location.href = 'index.html';
+
+            try {
+                const response = await fetch('http://<YOUR_PI_IP_ADDRESS>:3000/api/posts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newEntry)
+                });
+                if (response.ok) {
+                    alert('Portfolio-indlæg tilføjet!');
+                    window.location.href = 'index.html';
+                } else {
+                    alert('Fejl: Kunne ikke tilføje indlæg.');
+                }
+            } catch (error) {
+                alert('Der opstod en fejl. Se konsollen for detaljer.');
+            }
         });
     </script>
 </body>

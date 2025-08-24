@@ -29,54 +29,90 @@
     <script type="module">
         import { toBase64 } from './main.js';
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const form = document.getElementById('portfolio-form');
             const saveBtn = document.getElementById('save-changes-btn');
             const deleteBtn = document.getElementById('delete-entry-btn');
-            const portfolioEntries = JSON.parse(localStorage.getItem('portfolioEntries')) || [];
             const params = new URLSearchParams(window.location.search);
             const entryId = parseInt(params.get('id'), 10);
-            const entryToEdit = portfolioEntries.find(entry => entry.id === entryId);
+            let entryToEdit = null;
 
-            if (!entryToEdit) {
-                alert('Indlæg ikke fundet!');
+            const apiBaseUrl = 'http://<YOUR_PI_IP_ADDRESS>:3000/api';
+
+            if (!entryId) {
+                alert('Intet indlægs-ID fundet!');
                 window.location.href = 'index.html';
                 return;
             }
 
-            form.title.value = entryToEdit.title;
-            form.date.value = entryToEdit.date;
-            form.subject.value = entryToEdit.subject;
-            form.goal.value = entryToEdit.goal;
-            form.description.value = entryToEdit.description || '';
-            form.code.value = entryToEdit.code || '';
-            if (entryToEdit.picture) document.getElementById('current-picture').textContent = 'Et billede er allerede valgt. Vælg en ny fil for at erstatte det.';
-            if (entryToEdit.video) document.getElementById('current-video').textContent = 'En video er allerede valgt. Vælg en ny fil for at erstatte den.';
+            try {
+                const response = await fetch(`${apiBaseUrl}/posts`);
+                const entries = await response.json();
+                entryToEdit = entries.find(e => e.id === entryId);
+
+                if (!entryToEdit) {
+                    alert('Indlæg ikke fundet!');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                form.title.value = entryToEdit.title;
+                form.date.value = new Date(entryToEdit.date).toISOString().split('T')[0];
+                form.subject.value = entryToEdit.subject;
+                form.goal.value = entryToEdit.goal;
+                form.description.value = entryToEdit.description || '';
+                form.code.value = entryToEdit.code || '';
+                if (entryToEdit.picture) document.getElementById('current-picture').textContent = 'Et billede er allerede valgt.';
+                if (entryToEdit.video) document.getElementById('current-video').textContent = 'En video er allerede valgt.';
+
+            } catch (error) {
+                alert('Kunne ikke hente indlæg. Se konsollen for detaljer.');
+            }
 
             saveBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
-                const pictureFile = document.getElementById('picture').files[0];
-                const videoFile = document.getElementById('video').files[0];
-                const entryIndex = portfolioEntries.findIndex(entry => entry.id === entryId);
                 const updatedEntry = {
-                    id: entryToEdit.id, title: form.title.value, date: form.date.value, subject: form.subject.value,
-                    goal: form.goal.value, description: form.description.value, code: form.code.value,
-                    picture: pictureFile ? await toBase64(pictureFile) : entryToEdit.picture,
-                    video: videoFile ? await toBase64(videoFile) : entryToEdit.video
+                    title: form.title.value,
+                    date: form.date.value,
+                    subject: form.subject.value,
+                    goal: form.goal.value,
+                    description: form.description.value,
+                    code: form.code.value,
+                    picture: form.picture.files[0] ? await toBase64(form.picture.files[0]) : entryToEdit.picture,
+                    video: form.video.files[0] ? await toBase64(form.video.files[0]) : entryToEdit.video
                 };
-                portfolioEntries[entryIndex] = updatedEntry;
-                localStorage.setItem('portfolioEntries', JSON.stringify(portfolioEntries));
-                alert('Indlæg opdateret!');
-                window.location.href = 'index.html';
+
+                try {
+                    const response = await fetch(`${apiBaseUrl}/posts/${entryId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updatedEntry)
+                    });
+                    if (response.ok) {
+                        alert('Indlæg opdateret!');
+                        window.location.href = 'index.html';
+                    } else {
+                        alert('Fejl: Kunne ikke opdatere indlæg.');
+                    }
+                } catch (error) {
+                    alert('Der opstod en fejl. Se konsollen for detaljer.');
+                }
             });
 
-            deleteBtn.addEventListener('click', (e) => {
+            deleteBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
-                if (confirm('Er du helt sikker på, at du vil slette dette indlæg permanent? Handlingen kan ikke fortrydes.')) {
-                    const updatedEntries = portfolioEntries.filter(entry => entry.id !== entryId);
-                    localStorage.setItem('portfolioEntries', JSON.stringify(updatedEntries));
-                    alert('Indlægget er blevet slettet.');
-                    window.location.href = 'index.html';
+                if (confirm('Er du sikker på, at du vil slette dette indlæg?')) {
+                    try {
+                        const response = await fetch(`${apiBaseUrl}/posts/${entryId}`, { method: 'DELETE' });
+                        if (response.ok) {
+                            alert('Indlægget er blevet slettet.');
+                            window.location.href = 'index.html';
+                        } else {
+                            alert('Fejl: Kunne ikke slette indlæg.');
+                        }
+                    } catch (error) {
+                        alert('Der opstod en fejl. Se konsollen for detaljer.');
+                    }
                 }
             });
         });
