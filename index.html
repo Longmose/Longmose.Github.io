@@ -84,7 +84,6 @@
                     const matchesSubject = selectedSubject === 'all' || entry.subject === selectedSubject;
                     const entryDate = new Date(entry.date).toISOString().split('T')[0];
                     const matchesDate = (!startDate || entryDate >= startDate) && (!endDate || entryDate <= endDate);
-                    // *** THIS LINE IS NOW CORRECTED ***
                     return matchesSearch && matchesSubject && matchesDate;
                 };
 
@@ -131,16 +130,14 @@
                     const type = target.dataset.type;
                     const content = entryElement.querySelector(`.collapsible-content[data-type="${type}"]`);
                     content.classList.toggle('visible');
-                    // This line was also corrected previously
-                    target.textContent = content.classList.contains('visible') ?\`Skjul \${typeTranslations[type]}\` : \`Vis \${typeTranslations[type]}\`;
+                    target.textContent = content.classList.contains('visible') ? `Skjul ${typeTranslations[type]}` : `Vis ${typeTranslations[type]}`;
                     return;
                 }
 
                 if (!target.closest('a, button')) {
                     const details = entryElement.querySelector('.entry-details');
                     const isExpanded = details.style.height && details.style.height !== '0px';
-                    // This line was also corrected previously
-                    details.style.height = isExpanded ? '0px' : \`\${details.scrollHeight}px\`;
+                    details.style.height = isExpanded ? '0px' : `${details.scrollHeight}px`;
                 }
             });
 
