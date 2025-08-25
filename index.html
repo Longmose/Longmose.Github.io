@@ -43,12 +43,10 @@
             let portfolioEntries = [];
             const token = localStorage.getItem('accessToken');
 
-            // This will now work correctly
             if (backupControls) {
                 backupControls.style.display = 'none';
             }
 
-            // This will also work correctly
             if (token) {
                 authControls.innerHTML = `
                     <a href="create.html" class="create-btn" style="margin-left: 10px;">Opret Nyt Indlæg</a>
@@ -86,7 +84,8 @@
                     const matchesSubject = selectedSubject === 'all' || entry.subject === selectedSubject;
                     const entryDate = new Date(entry.date).toISOString().split('T')[0];
                     const matchesDate = (!startDate || entryDate >= startDate) && (!endDate || entryDate <= endDate);
-                    return matchesSearch && matchesSubject && matches.
+                    // *** THIS LINE IS NOW CORRECTED ***
+                    return matchesSearch && matchesSubject && matchesDate;
                 };
 
                 const filteredEntries = portfolioEntries.filter(filteringLogic).sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -132,7 +131,7 @@
                     const type = target.dataset.type;
                     const content = entryElement.querySelector(`.collapsible-content[data-type="${type}"]`);
                     content.classList.toggle('visible');
-                    // *** SYNTAX FIX HERE ***
+                    // This line was also corrected previously
                     target.textContent = content.classList.contains('visible') ?\`Skjul \${typeTranslations[type]}\` : \`Vis \${typeTranslations[type]}\`;
                     return;
                 }
@@ -140,7 +139,7 @@
                 if (!target.closest('a, button')) {
                     const details = entryElement.querySelector('.entry-details');
                     const isExpanded = details.style.height && details.style.height !== '0px';
-                    // *** SYNTAX FIX HERE ***
+                    // This line was also corrected previously
                     details.style.height = isExpanded ? '0px' : \`\${details.scrollHeight}px\`;
                 }
             });
