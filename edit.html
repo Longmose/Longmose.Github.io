@@ -29,6 +29,12 @@
     <script type="module">
         import { toBase64 } from './main.js';
 
+        // Redirect to login if not authenticated
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+            window.location.href = 'login.html';
+        }
+
         document.addEventListener('DOMContentLoaded', async () => {
             const form = document.getElementById('portfolio-form');
             const saveBtn = document.getElementById('save-changes-btn');
@@ -46,6 +52,7 @@
             }
 
             try {
+                // This fetch doesn't need auth as it's a GET request
                 const response = await fetch(`${apiBaseUrl}/posts`);
                 const entries = await response.json();
                 entryToEdit = entries.find(e => e.id === entryId);
@@ -72,12 +79,8 @@
             saveBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
                 const updatedEntry = {
-                    title: form.title.value,
-                    date: form.date.value,
-                    subject: form.subject.value,
-                    goal: form.goal.value,
-                    description: form.description.value,
-                    code: form.code.value,
+                    title: form.title.value, date: form.date.value, subject: form.subject.value,
+                    goal: form.goal.value, description: form.description.value, code: form.code.value,
                     picture: form.picture.files[0] ? await toBase64(form.picture.files[0]) : entryToEdit.picture,
                     video: form.video.files[0] ? await toBase64(form.video.files[0]) : entryToEdit.video
                 };
@@ -85,9 +88,19 @@
                 try {
                     const response = await fetch(`${apiBaseUrl}/posts/${entryId}`, {
                         method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}` // Add this header
+                        },
                         body: JSON.stringify(updatedEntry)
                     });
+
+                    if (response.status === 401 || response.status === 403) {
+                        alert('Authentication failed. Please log in again.');
+                        window.location.href = 'login.html';
+                        return;
+                    }
+
                     if (response.ok) {
                         alert('Indlæg opdateret!');
                         window.location.href = 'index.html';
@@ -103,7 +116,19 @@
                 e.preventDefault();
                 if (confirm('Er du sikker på, at du vil slette dette indlæg?')) {
                     try {
-                        const response = await fetch(`${apiBaseUrl}/posts/${entryId}`, { method: 'DELETE' });
+                        const response = await fetch(`${apiBaseUrl}/posts/${entryId}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Authorization': `Bearer ${token}` // Add this header
+                            }
+                        });
+
+                        if (response.status === 401 || response.status === 403) {
+                            alert('Authentication failed. Please log in again.');
+                            window.location.href = 'login.html';
+                            return;
+                        }
+
                         if (response.ok) {
                             alert('Indlægget er blevet slettet.');
                             window.location.href = 'index.html';

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="form-container">
+        <h1>Login</h1>
+        <form id="login-form">
+            <div class="form-group">
+                <label for="username">Brugernavn</label>
+                <input type="text" id="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Adgangskode</label>
+                <input type="password" id="password" required>
+            </div>
+            <button type="submit" class="action-button">Login</button>
+        </form>
+        <div id="error-message" style="color: red; margin-top: 10px;"></div>
+    </div>
+
+    <script>
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = e.target.username.value;
+            const password = e.target.password.value;
+            const errorMessage = document.getElementById('error-message');
+
+            try {
+                const response = await fetch('https://api.longmose-portfolio.duckdns.org/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (response.ok) {
+                    const { accessToken } = await response.json();
+                    localStorage.setItem('accessToken', accessToken);
+                    window.location.href = 'index.html';
+                } else {
+                    errorMessage.textContent = 'Login fejlede. Tjek venligst brugernavn og adgangskode.';
+                }
+            } catch (error) {
+                errorMessage.textContent = 'Der opstod en fejl. Prøv venligst igen.';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -8,7 +8,11 @@
 </head>
 <body>
     <div class="container">
-        <div class="top-bar"><h1>Portfolio-indlæg</h1><a href="create.html" class="create-btn">Opret Nyt Indlæg</a></div>
+        <div class="top-bar">
+            <h1>Portfolio-indlæg</h1>
+            <div id="auth-controls">
+            </div>
+        </div>
         <div id="filter-controls"><div><label for="search-input">Søg</label><input type="search" id="search-input" placeholder="Indtast søgeord"></div><div><label for="filter-subject">Filtrér efter fag</label><select id="filter-subject"><option value="all">Alle fag</option><option value="Cyber Security">Cyber Security</option><option value="Appudvikling">Appudvikling</option><option value="Andet">Andet</option></select></div><div><label for="start-date">Startdato</label><input type="date" id="start-date"></div><div><label for="end-date">Slutdato</label><input type="date" id="end-date"></div></div>
 
         <div id="backup-controls">
@@ -34,16 +38,34 @@
             const filterSubject = document.getElementById('filter-subject');
             const startDateFilter = document.getElementById('start-date');
             const endDateFilter = document.getElementById('end-date');
+            const authControls = document.getElementById('auth-controls'); // New element
             let portfolioEntries = [];
+            const token = localStorage.getItem('accessToken'); // Check for login token
+
+            // Setup Login/Logout/Create buttons based on whether a token exists
+            if (token) {
+                authControls.innerHTML = `
+                    <a href="create.html" class="create-btn" style="margin-left: 10px;">Opret Nyt Indlæg</a>
+                    <button id="logout-btn" class="action-button delete-btn" style="margin-left: 10px; width: auto;">Log Ud</button>
+                `;
+                document.getElementById('logout-btn').addEventListener('click', () => {
+                    localStorage.removeItem('accessToken');
+                    location.reload();
+                });
+            } else {
+                authControls.innerHTML = '<a href="login.html" class="create-btn">Login</a>';
+            }
 
             const apiBaseUrl = 'https://api.longmose-portfolio.duckdns.org/api';
 
             const fetchEntries = async () => {
                 try {
                     const response = await fetch(`${apiBaseUrl}/posts`);
+                    if (!response.ok) throw new Error('Network response was not ok');
                     portfolioEntries = await response.json();
                     renderEntries();
                 } catch (error) {
+                    console.error('Fetch error:', error);
                     portfolioList.innerHTML = '<p>Error loading portfolio entries. Make sure the backend is running.</p>';
                 }
             };
@@ -68,6 +90,10 @@
                     const entryElement = document.createElement('div');
                     entryElement.classList.add('portfolio-entry');
                     entryElement.setAttribute('data-id', entry.id);
+
+                    // Conditionally show the "Edit" button only if logged in
+                    const editButtonHtml = token ? `<a href="edit.html?id=${entry.id}" class="edit-btn" title="Rediger Indlæg">Rediger</a>` : '';
+
                     entryElement.innerHTML = `
                         <div class="entry-header">
                             <div class="entry-header-info">
@@ -88,7 +114,7 @@
                             ${entry.picture ? `<button class="toggle-btn toggle-content-btn" data-type="picture">Vis ${typeTranslations.picture}</button><div class="collapsible-content" data-type="picture"><img src="${entry.picture}" alt="${entry.title} Picture"></div>` : ''}
                             ${entry.video ? `<button class="toggle-btn toggle-content-btn" data-type="video">Vis ${typeTranslations.video}</button><div class="collapsible-content" data-type="video"><video controls src="${entry.video}"></video></div>` : ''}
                         </div>
-                        <div class="entry-actions"><a href="edit.html?id=${entry.id}" class="edit-btn" title="Rediger Indlæg">Rediger</a></div>`;
+                        <div class="entry-actions">${editButtonHtml}</div>`;
                     portfolioList.appendChild(entryElement);
                 });
             };
@@ -102,14 +128,14 @@
                     const type = target.dataset.type;
                     const content = entryElement.querySelector(`.collapsible-content[data-type="${type}"]`);
                     content.classList.toggle('visible');
-                    target.textContent = content.classList.contains('visible') ? `Skjul ${typeTranslations[type]}` : `Vis ${typeTranslations[type]}`;
+                    target.textContent = content.classList.contains('visible') ?\`Skjul \${typeTranslations[type]}\` : \`Vis \${typeTranslations[type]}\`;
                     return;
                 }
 
                 if (!target.closest('a, button')) {
                     const details = entryElement.querySelector('.entry-details');
                     const isExpanded = details.style.height && details.style.height !== '0px';
-                    details.style.height = isExpanded ? '0px' : `${details.scrollHeight}px`;
+                    details.style.height = isExpanded ? '0px' : `${ details.scrollHeight } px`;
                 }
             });
 
