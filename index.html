@@ -39,6 +39,7 @@
             const startDateFilter = document.getElementById('start-date');
             const endDateFilter = document.getElementById('end-date');
             const authControls = document.getElementById('auth-controls'); // New element
+            document.getElementById('backup-controls').style.display = 'none';
             let portfolioEntries = [];
             const token = localStorage.getItem('accessToken'); // Check for login token
 
