@@ -28,10 +28,10 @@
     <script type="module">
         import { toBase64 } from './main.js';
 
-        //// Redirect to login if not authenticated
-        //if (!localStorage.getItem('accessToken')) {
-        //    window.location.href = 'login.html';
-        //}
+        // Redirect to login if not authenticated
+        if (!localStorage.getItem('accessToken')) {
+            window.location.href = 'login.html';
+        }
 
         document.getElementById('portfolio-form').addEventListener('submit', async (e) => {
             e.preventDefault();
