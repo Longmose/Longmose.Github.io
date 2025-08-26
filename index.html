@@ -126,26 +126,31 @@
                 const entryElement = target.closest('.portfolio-entry');
                 if (!entryElement) return;
 
+                const details = entryElement.querySelector('.entry-details');
+
+                // Logic for the toggle buttons (Vis/Skjul Kode/Billede)
                 if (target.closest('.toggle-content-btn')) {
                     const type = target.dataset.type;
                     const content = entryElement.querySelector(`.collapsible-content[data-type="${type}"]`);
-                    const details = entryElement.querySelector('.entry-details');
 
-                    // Toggle the content's visibility
                     content.classList.toggle('visible');
                     target.textContent = content.classList.contains('visible') ? `Skjul ${typeTranslations[type]}` : `Vis ${typeTranslations[type]}`;
 
-                    // If the main details section is already open, recalculate its height
-                    if (details.style.height && details.style.height !== '0px') {
-                        details.style.height = `${details.scrollHeight}px`;
+                    // Recalculate max-height if the details section is already open
+                    if (details.style.maxHeight && details.style.maxHeight !== '0px') {
+                        details.style.maxHeight = `${details.scrollHeight}px`;
                     }
                     return;
                 }
 
+                // Logic for expanding/collapsing the main details section
                 if (!target.closest('a, button')) {
-                    const details = entryElement.querySelector('.entry-details');
-                    const isExpanded = details.style.height && details.style.height !== '0px';
-                    details.style.height = isExpanded ? '0px' : `${details.scrollHeight}px`;
+                    const isExpanded = details.style.maxHeight && details.style.maxHeight !== '0px';
+                    if (isExpanded) {
+                        details.style.maxHeight = '0px';
+                    } else {
+                        details.style.maxHeight = `${details.scrollHeight}px`;
+                    }
                 }
             });
 

@@ -179,9 +179,9 @@ input[type="date"] {
 }
 
 .entry-details {
-    height: 0;
+    max-height: 0;
     overflow: hidden;
-    transition: height 0.2s ease-in-out;
+    transition: max-height 0.3s ease-in-out;
     border-top: 1px solid #e9ecef;
     margin-top: 15px;
     padding-top: 15px;
@@ -360,3 +360,9 @@ textarea {
     #create-btn:hover {
         background-color: #0056b3;
     }
+
+/* Add this new rule to force word wrapping in specific areas */
+.entry-goal p, .entry-details p {
+    overflow-wrap: break-word;
+    word-break: break-all;
+}
