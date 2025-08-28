@@ -11,6 +11,7 @@
     <div class="container">
         <div class="top-bar">
             <h1>Portfolio-indlæg</h1>
+            <button id="theme-toggle-btn">Toggle Dark Mode</button>
             <div id="auth-controls">
             </div>
         </div>
@@ -41,8 +42,25 @@
             const endDateFilter = document.getElementById('end-date');
             const authControls = document.getElementById('auth-controls');
             const backupControls = document.getElementById('backup-controls');
+            const themeToggleBtn = document.getElementById('theme-toggle-btn');
             let portfolioEntries = [];
             const token = localStorage.getItem('accessToken');
+
+            // Dark Mode Toggle
+            const currentTheme = localStorage.getItem('theme');
+            if (currentTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+            }
+
+            themeToggleBtn.addEventListener('click', () => {
+                document.body.classList.toggle('dark-mode');
+                let theme = 'light';
+                if (document.body.classList.contains('dark-mode')) {
+                    theme = 'dark';
+                }
+                localStorage.setItem('theme', theme);
+            });
+
 
             if (backupControls) {
                 backupControls.style.display = 'none';
@@ -50,9 +68,9 @@
 
             if (token) {
                 authControls.innerHTML = `
-                    <a href="create.html" class="create-btn" style="margin-left: 10px;">Opret Nyt Indlæg</a>
-                    <button id="logout-btn" class="action-button delete-btn" style="margin-left: 10px; width: auto;">Log Ud</button>
-                `;
+                        <a href="create.html" class="create-btn" style="margin-left: 10px;">Opret Nyt Indlæg</a>
+                        <button id="logout-btn" class="action-button delete-btn" style="margin-left: 10px; width: auto;">Log Ud</button>
+                    `;
                 document.getElementById('logout-btn').addEventListener('click', () => {
                     localStorage.removeItem('accessToken');
                     location.reload();
@@ -98,26 +116,26 @@
                     const editButtonHtml = token ? `<a href="edit.html?id=${entry.id}" class="edit-btn" title="Rediger Indlæg">Rediger</a>` : '';
 
                     entryElement.innerHTML = `
-                        <div class="entry-header">
-                            <div class="entry-header-info">
-                                <h3>${entry.title}</h3>
-                                <div class="entry-meta">
-                                    <span>📅 ${formatDate(new Date(entry.date).toISOString().split('T')[0])}</span>
-                                    <span>${getSubjectIcon(entry.subject)} ${entry.subject}</span>
-                                </div>
-                                <div class="entry-goal">
-                                    <div class="entry-section-title">Mål</div>
-                                    <p>${entry.goal.replace(/\n/g, '<br>')}</p>
+                            <div class="entry-header">
+                                <div class="entry-header-info">
+                                    <h3>${entry.title}</h3>
+                                    <div class="entry-meta">
+                                        <span>📅 ${formatDate(new Date(entry.date).toISOString().split('T')[0])}</span>
+                                        <span>${getSubjectIcon(entry.subject)} ${entry.subject}</span>
+                                    </div>
+                                    <div class="entry-goal">
+                                        <div class="entry-section-title">Mål</div>
+                                        <p>${entry.goal.replace(/\n/g, '<br>')}</p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="entry-details">
-                            ${entry.description ? `<div class="entry-section-title">Beskrivelse</div><p>${entry.description.replace(/\n/g, '<br>')}</p>` : ''}
-                            ${entry.code ? `<button class="toggle-btn toggle-content-btn" data-type="code">Vis ${typeTranslations.code}</button><div class="collapsible-content" data-type="code"><pre><code>${entry.code.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre></div>` : ''}
-                            ${entry.picture ? `<button class="toggle-btn toggle-content-btn" data-type="picture">Vis ${typeTranslations.picture}</button><div class="collapsible-content" data-type="picture"><img src="${entry.picture}" alt="${entry.title} Picture"></div>` : ''}
-                            ${entry.video ? `<button class="toggle-btn toggle-content-btn" data-type="video">Vis ${typeTranslations.video}</button><div class="collapsible-content" data-type="video"><video controls src="${entry.video}"></video></div>` : ''}
-                        </div>
-                        <div class="entry-actions">${editButtonHtml}</div>`;
+                            <div class="entry-details">
+                                ${entry.description ? `<div class="entry-section-title">Beskrivelse</div><p>${entry.description.replace(/\n/g, '<br>')}</p>` : ''}
+                                ${entry.code ? `<button class="toggle-btn toggle-content-btn" data-type="code">Vis ${typeTranslations.code}</button><div class="collapsible-content" data-type="code"><pre><code>${entry.code.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre></div>` : ''}
+                                ${entry.picture ? `<button class="toggle-btn toggle-content-btn" data-type="picture">Vis ${typeTranslations.picture}</button><div class="collapsible-content" data-type="picture"><img src="${entry.picture}" alt="${entry.title} Picture"></div>` : ''}
+                                ${entry.video ? `<button class="toggle-btn toggle-content-btn" data-type="video">Vis ${typeTranslations.video}</button><div class="collapsible-content" data-type="video"><video controls src="${entry.video}"></video></div>` : ''}
+                            </div>
+                            <div class="entry-actions">${editButtonHtml}</div>`;
                     portfolioList.appendChild(entryElement);
                 });
             };
