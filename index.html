@@ -42,7 +42,7 @@
                     title: "Strategi for Kvalitetssikring: Widget Testing",
                     date: "2025-11-21",
                     subject: "Appudvikling",
-                    goal: "Sikre UI-stabilitet gennem automatiserede tests.",
+                    goal: "Sikre UI-stabilitet gennem tests.",
                     description: "I takt med at UI'et bliver mere komplekst (f.eks. med betinget visning af loading-spinners og fejlkoder), stiger risikoen for regressioner. Jeg har derfor lagt en strategi for at implementere Widget Tests.\nMin plan er at teste AnalysisLoadingView isoleret. Jeg vil verificere, at den viser den korrekte tekst, når den modtager en statusbesked. Dette er en fordel ved Flutter: Vi kan teste UI-komponenter lynhurtigt uden at skulle starte en simulator op, hvilket gør det muligt at køre testene som en del af CI/CD i fremtiden.",
                     code: "testWidgets('AnalysisLoadingView displays the provided status message', (\n  WidgetTester tester,\n) async {\n  // Arrange\n  const testInput = 'Analyzing image...';\n\n  // Act\n  await tester.pumpWidget(\n    const MaterialApp(\n      home: Scaffold(body: AnalysisLoadingView(statusMessage: testInput)),\n    ),\n  );\n\n  // Assert\n  expect(find.text(testInput), findsOneWidget);\n  expect(find.byType(CircularProgressIndicator), findsOneWidget);\n});"
                 },
