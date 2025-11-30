@@ -12,20 +12,13 @@
         <div class="top-bar">
             <h1>Portfolio-indlæg</h1>
             <button id="theme-toggle-btn">Toggle Dark Mode</button>
-            <div id="auth-controls">
-            </div>
+            <div id="auth-controls"></div>
         </div>
-        <div id="filter-controls"><div><label for="search-input">Søg</label><input type="search" id="search-input" placeholder="Indtast søgeord"></div><div><label for="filter-subject">Filtrér efter fag</label><select id="filter-subject"><option value="all">Alle fag</option><option value="Cyber Security">Cyber Security</option><option value="Appudvikling">Appudvikling</option><option value="Andet">Andet</option></select></div><div><label for="start-date">Startdato</label><input type="date" id="start-date"></div><div><label for="end-date">Slutdato</label><input type="date" id="end-date"></div></div>
-
-        <div id="backup-controls">
-            <h2>Backup af Data</h2>
-            <div>
-                <button id="export-btn">Eksporter Alle Indlæg</button>
-            </div>
-            <div id="import-form">
-                <input type="file" id="import-file" accept=".json">
-                <button id="import-btn">Importer Fra Fil</button>
-            </div>
+        <div id="filter-controls">
+            <div><label for="search-input">Søg</label><input type="search" id="search-input" placeholder="Indtast søgeord"></div>
+            <div><label for="filter-subject">Filtrér efter fag</label><select id="filter-subject"><option value="all">Alle fag</option><option value="Cyber Security">Cyber Security</option><option value="Appudvikling">Appudvikling</option><option value="Andet">Andet</option></select></div>
+            <div><label for="start-date">Startdato</label><input type="date" id="start-date"></div>
+            <div><label for="end-date">Slutdato</label><input type="date" id="end-date"></div>
         </div>
 
         <div id="portfolio-list"></div>
@@ -40,11 +33,156 @@
             const filterSubject = document.getElementById('filter-subject');
             const startDateFilter = document.getElementById('start-date');
             const endDateFilter = document.getElementById('end-date');
-            const authControls = document.getElementById('auth-controls');
-            const backupControls = document.getElementById('backup-controls');
             const themeToggleBtn = document.getElementById('theme-toggle-btn');
-            let portfolioEntries = [];
-            const token = localStorage.getItem('accessToken');
+
+            // --- HARDCODED DATA START ---
+            const portfolioEntries = [
+                {
+                    id: 16,
+                    title: "Strategi for Kvalitetssikring: Widget Testing",
+                    date: "2025-11-21",
+                    subject: "Appudvikling",
+                    goal: "Sikre UI-stabilitet gennem automatiserede tests.",
+                    description: "I takt med at UI'et bliver mere komplekst (f.eks. med betinget visning af loading-spinners og fejlkoder), stiger risikoen for regressioner. Jeg har derfor lagt en strategi for at implementere Widget Tests.\nMin plan er at teste AnalysisLoadingView isoleret. Jeg vil verificere, at den viser den korrekte tekst, når den modtager en statusbesked. Dette er en fordel ved Flutter: Vi kan teste UI-komponenter lynhurtigt uden at skulle starte en simulator op, hvilket gør det muligt at køre testene som en del af CI/CD i fremtiden.",
+                    code: "testWidgets('AnalysisLoadingView displays the provided status message', (\n  WidgetTester tester,\n) async {\n  // Arrange\n  const testInput = 'Analyzing image...';\n\n  // Act\n  await tester.pumpWidget(\n    const MaterialApp(\n      home: Scaffold(body: AnalysisLoadingView(statusMessage: testInput)),\n    ),\n  );\n\n  // Assert\n  expect(find.text(testInput), findsOneWidget);\n  expect(find.byType(CircularProgressIndicator), findsOneWidget);\n});"
+                },
+                {
+                    id: 15,
+                    title: "Sikker Autentificering: OAuth 2.0",
+                    date: "2025-11-14",
+                    subject: "Cyber Security",
+                    goal: "Design af sikkert login-flow med Azure AD.",
+                    description: "For at sikre Confidentiality har jeg implementeret OAuth 2.0. Appen håndterer aldrig brugerens kodeord, men modtager et midlertidigt AccessToken. Jeg har lavet en AuthLink, der automatisk injicerer dette token som en Bearer header i alle API-kald. Det sikrer, at kun godkendte brugere kan tilgå backendens endpoints.\nVigtigst af alt har jeg konfigureret klienten til at kommunikere over SSL/TLS (HTTPS), så tokenet ikke kan opsnappes i klar tekst under transport.",
+                    code: "// Fra lib/core/config/graphql_config.dart\nfinal AuthLink authLink = AuthLink(\n  getToken: () async => token != null ? 'Bearer $token' : null,\n);"
+                },
+                {
+                    id: 14,
+                    title: "Asynkronitet: WebSockets & Subscriptions",
+                    date: "2025-11-07",
+                    subject: "Appudvikling",
+                    goal: "Implementere real-time dataflow uden polling.",
+                    description: "Vores AI-analyse tager tid. I stedet for ineffektivt at spørge serveren gentagne gange ('polling'), har jeg implementeret GraphQL Subscriptions over WebSockets. Det krævede en avanceret opsætning af min GraphQLClient, der kan splitte trafikken: HTTP til almindelige kald og WebSockets til real-time events. Det viser styrken ved asynkron programmering i moderne apps.",
+                    code: "// lib/core/config/graphql_config.dart\nfinal Link splitLink = Link.split(\n  (request) => request.isSubscription,\n  webSocketLink,\n  authedHttpLink,\n);"
+                },
+                {
+                    id: 13,
+                    title: "Sikring af Integritet: Hashing",
+                    date: "2025-10-15",
+                    subject: "Cyber Security",
+                    goal: "Anvende kryptografiske hash-funktioner til dataintegritet.",
+                    description: "Med reference til I'et i CIA-modellen (Integritet), har jeg implementeret manuel hashing af billedfiler før upload. Ved at beregne en SHA-256 checksum på klienten og sende den med til serveren, sikrer vi matematisk, at filen ikke er korrumperet under upload.",
+                    code: "// Fra FileUploadService.dart\nString _calculateSha256(Uint8List bytes) {\n  return 'sha256:${sha256.convert(bytes)}';"
+                },
+                {
+                    id: 12,
+                    title: "Fra Spaghetti til Arkitektur",
+                    date: "2025-10-08",
+                    subject: "Appudvikling",
+                    goal: "Implementere 'Separation of Concerns' med Provider-patternet.",
+                    description: "I takt med at appen voksede, blev min kode uoverskuelig. Jeg valgte at refaktorere appen til en Feature-first arkitektur og implementere Provider til state management. Det minder om Dependency Injection fra .NET, hvor jeg nu kan injicere services (AuthService, CameraService) i toppen af appen i stedet for at sende dem manuelt rundt. Det har gjort koden langt mere testbar og vedligeholdelsesvenlig.",
+                    code: "// lib/main.dart\nrunApp(MultiProvider(\n  providers: [\n    ChangeNotifierProvider(create: (_) => AuthService()),\n    Provider(create: (_) => CameraService()),\n  ],\n  child: const App(),\n));"
+                },
+                {
+                    id: 11,
+                    title: "Kafka Server 2",
+                    date: "2025-10-02",
+                    subject: "Cyber Security",
+                    goal: "Opsætte en Kafka server til kommunikation mellem services",
+                    description: "Jeg har arbejdet videre opsættningen en Kafka-instans til vores backend for at håndtere beskeder mellem services. Et kritisk krav var sikkerheden, så jeg dykkede ned i SASL (Simple Authentication and Security Layer).\nPlanen var at konfigurere Kafka til at bruge SASL for at sikre, at kun godkendte services kunne producere eller forbruge beskeder, kombineret med SSL/TLS til kryptering af trafikken. Desværre stødte jeg på store kompatibilitetsproblemer med Docker på min Raspberry Pi (ARM-arkitektur), som forhindrede serveren i at starte stabilt op. Selvom implementationen ikke lykkedes fuldt ud, gav det mig en dyb teoretisk forståelse for, hvordan SASL fungerer som et sikkerhedslag i distribuerede systemer kontra simpel HTTP-auth."
+                },
+                {
+                    id: 10,
+                    title: "Kafka Server 1",
+                    date: "2025-10-01",
+                    subject: "Cyber Security",
+                    goal: "Opsætte en Kafka server til kommunikation mellem services",
+                    description: "Internt i vores backend vil vi bruge kafka til at kommunikere mellem microservices. Jeg så en mulighed for at få en form for praktisk anvendelse og opsætning af noget IT-sikkerhed inden for mit interessepunkt. Nemlig service-to-service autherization og authentikation, og selvfølgelig kryptering af de tranmiterrede data mellem services.\n\nDerfor har jeg begivet mig ud i at opsætte en kafka server på min Raspberry Pi.\nFørst tjekkede jeg kompatibilitet, med Arm-processorer, da det er et problem jeg har haft før, men det burde være kompatibelt.\nDernæst dannede jeg mig et minimalt overblik over hvad kafka overhovedet er, da det ikke falder direkte ind under mine emner. Der kunne jeg forstå at en kafka-server konstant skriver og læser på disken, og generelt kan være relativt krævende for en server at køre. Min raspberry er dog af en nyere version med 8gb RAM og en NVME SSD, så det burde afhjælpe de bekymringer.\n\nNu gik jeg så i gang med opsætningen, hvor jeg fulgte en guide.\nJeg gjorde brug af SSH til min rpi og docker til at containerize opsætningen.\n\nJeg stødte på problemer som jeg ser videre på en anden gang."
+                },
+                {
+                    id: 9,
+                    title: "Pre-signed URL",
+                    date: "2025-09-29",
+                    subject: "Cyber Security",
+                    goal: "Lær om pre-signed URL",
+                    description: "Til vores projekt kommer vi til at skulle tage billeder som så skal føres igennem sytemets microservices for at blive analyseret af en AI-service.\nFor at gøre dette har vi valgt at gøre brug af pre-signed URL. Det vil gøre det muligt for os at gemme billedet via en url i vores storage, og så give en anden service en url til at kunne tilgå billedet.\n\nDenne metode tillader os at gøre så en service skal have en gyldig URL, som giver tilladelse til at udføre den specifikke handling som ønskes. Denne URL vil så også kunne udløbe, efter et interval der er fastsat af os."
+                },
+                {
+                    id: 8,
+                    title: "Kamera adgang fortsat",
+                    date: "2025-09-29",
+                    subject: "Appudvikling",
+                    goal: "Optimer kamera adgang i flutter",
+                    description: "Jeg har allerede noget kode til at tilgå kameraet gennem appen. Det har jeg så arbejdet videre med og sørget for at have en klar forståelse af hvad der sker hvor. Jeg lærte vigtigheden af App Lifecycle, altså at kameraet skal frigives (controller.dispose()), hvis brugeren minimerer appen, for ikke at låse ressourcen for andre apps.",
+                    code: "@override\nvoid didChangeAppLifecycleState(AppLifecycleState state) {\n  if (state == AppLifecycleState.inactive) {\n    _controller?.dispose(); // Frigiv ressourcer\n  } else if (state == AppLifecycleState.resumed) {\n    _initializeCamera(); // Genstart\n  }\n}"
+                },
+                {
+                    id: 7,
+                    title: "Kamera adgang i Flutter",
+                    date: "2025-09-26",
+                    subject: "Appudvikling",
+                    goal: "Find ud af hvordan man tilgår telefonens kamera gennem appen.",
+                    description: "Jeg har undersøgt hvordan jeg tilgår kameraet i min app. Hvilke tilladelser der skal gives fra brugeren på de forskellige OS, og hvordan jeg så indhenter de tilladelser.\n\nDet startede ud med at være forvirrende, fordi jeg stadig kommer forbi koncepter og navne jeg ikke kender i Dart. Jeg fik dog lavet noget der næsten virker som jeg vil have det.",
+                    code: "<uses-permission android:name=\"android.permission.CAMERA\" />"
+                },
+                {
+                    id: 6,
+                    title: "Demo App",
+                    date: "2025-09-22",
+                    subject: "Appudvikling",
+                    goal: "Udvide min forståelse af udvikling af en app",
+                    description: "Jeg har med min nuværende forståelse af mit valgte framework og udviklingsetup, startet et nyt flutter projekt. Det er udelukkende lavet til at jeg kan afprøve mine færdigheder og teste koncepter som jeg støder på eller selv postulerer.\n\nIndtil videre har jeg bare prøvet at oprette nogle pages fra bunden, uden en guide.\nJeg kommer til at bruge dette projekt i fremtiden til læring."
+                },
+                {
+                    id: 5,
+                    title: "Afstikker til kvantekryptografi",
+                    date: "2025-09-16",
+                    subject: "Cyber Security",
+                    goal: "Få viden om kvantekryptografi og 'harvest now, decrypt later' trusler.",
+                    description: "Jeg har læst op på den grundlæggende teori bag kvantecomputere, og deres qubits. Pga. den måde de udnytter kvantestadiet superposition, vil de gøre vores nuværende passwords tilnærmelsesvist ubrugelige.\n\nJeg har undersøgt hvordan det kan lade sig gøre, og hvor langt teknologien er.\nDa kvantecomputere ikke er særligt udbredte endnu, pga. sværhedsgraden i at lave og køre dem, så er problemet med dekryptering ikke stort endnu.\nTilgengæld fandt jeg frem til at mange indsamler information i dets nuværende krypterede stadie og gemmer det. På den måde vil de kunne dekryptere dataen når kvantecomputere bliver mere tilgængelige.\n\nFor at mitigere disse trusler udvikles kvantekryptografi, som udnytter kvante-love til at kryptere data på en måde som er 'ugættelig'."
+                },
+                {
+                    id: 4,
+                    title: "OWASP Mobile top 10 - intro",
+                    date: "2025-09-10",
+                    subject: "Cyber Security",
+                    goal: "Danne generelt kendskab til kritiske principper i mobilapplikations-sikkerhed",
+                    description: "Jeg har læst OWASP mobile top 10 for at danne mig en overordnet forståelse for nogle af de mest essentielle punkter man sakl være opmærksom på ved udvikling af en mobil-app.\n\nOWASP er en organisation der siden start 2000 har vurderet og prioriteret trusler i IT verdenen.\nDeres top 10 lister giver en prioriteret og opdateret liste over de største trusler for den givne kategori.\n\nJeg har kigget på deres 2024 mobile top 10, da jeg ønsker at vide hvad jeg skal være særligt opmærksom på ved udviklingen af vores app.\n\nJeg har gennemgået de forskellige punkter og dannet overfladisk forståelse af emnerne.\n\n- M2: Inadequate Supply Chain Security: Relevant, da vi bruger 3. parts pakker.\n- M5: Insecure Communication: Data skal krypteres i transit.\n- M9: Insecure Data Storage: Kritisk ift. tokens.\n\nOvenstående havde umiddelbart mest relevans."
+                },
+                {
+                    id: 3,
+                    title: "Flutter opstart",
+                    date: "2025-09-05",
+                    subject: "Appudvikling",
+                    goal: "Få reelt kendskab til Flutter/Dart, og dennes basale opsætning og funktionalitet.",
+                    description: "Jeg har arbejdet praktisk med Flutter, hvor jeg er begyndt at skrive kode i den tilhørende widget struktur. Jeg har gennemgået kurset 'Flutter Essential Training: Build for Multiple Platforms' på linkedinlearning, som har hjulpet mig med at forstå strukturen i flutter"
+                },
+                {
+                    id: 2,
+                    title: "Valg af framework",
+                    date: "2025-08-18",
+                    subject: "Appudvikling",
+                    goal: "Fastsætte hvilket framework/sprog jeg vil skrive appen i.",
+                    description: "Jeg har, baseret på anbefalinger, taget udgangspunkt i at undersøge Flutter, og sammenligne det med andre muligheder. Flutters indbyggede render engine giver mulighed for at bygge native til alle primære platforme uden brug af en 'bridge' til at fungere som translation layer, hvilket sikrer høj ydeevne. Flutter opbygges ved at bruge nestede widgets og skrives i Dart. Alt i alt har jeg besluttet at bruge Flutter.",
+                    code: "import 'package:flutter/material.dart';\nvoid main() {\n  runApp(\n    MaterialApp(\n      // The `home` property is the widget for the default screen.\n      home: Scaffold(\n        appBar: AppBar(\n          title: const Text('Widget Structure'),\n          backgroundColor: Colors.blueGrey,\n        ),\n        // The body of the screen.\n        body: Center(\n          // A Column arranges its children vertically.\n          child: Column(\n            // Center the column's children on the main axis (vertically).\n            mainAxisAlignment: MainAxisAlignment.center,\n            // The list of child widgets.\n            children: <Widget>[\n              const Text(\n                'This is a Column',\n                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),\n              ),\n// A SizedBox is often used to create space between widgets.\n              const SizedBox(height: 20),\nconst Icon(\n                Icons.arrow_downward,\n                size: 30,\n              ),\nconst SizedBox(height: 20),\n// A Row arranges its children horizontally.\n              const Row(\n                // Center the row's children on the main axis (horizontally).\n                mainAxisAlignment: MainAxisAlignment.center,\n                children: <Widget>[\n                  Icon(Icons.lightbulb, color: Colors.yellow),\n                  SizedBox(width: 10), // Horizontal space\n                  Text('This is a Row'),\n                  SizedBox(width: 10), // Horizontal space\n                  Icon(Icons.lightbulb, color: Colors.yellow),\n                ],\n              ),\n            ],\n          ),\n        ),\n      ),\n    ),\n  );\n}"
+                },
+                {
+                    id: 1,
+                    title: "Afklaring og indgrænsning af emner",
+                    date: "2025-08-18",
+                    subject: "Cyber Security",
+                    goal: "Få afklaring af hvilke emner jeg vil berøre inden for It Sikkerhed",
+                    description: "Jeg har udforsket muligheder for at angribe emnet It-sikkerhed, med et perspektiv i appudvikling. Det virker begrænset ift. at skulle bygge ekstra viden på min eksisterende viden om it-sikkerhed. Jeg er dog sikker på at der kommer noget, og indtil da er jeg interesseret i at lære teori bag OWASP top 10 og OWASP mobile top 10."
+                },
+                {
+                    id: 0,
+                    title: "Portfolio opstart",
+                    date: "2025-08-13",
+                    subject: "Andet",
+                    goal: "Oprette en portfolio til personligt brug",
+                    description: "Jeg gør brug af github pages til at oprette en side, hvorpå jeg vil kunne dokumentere min fremgang. Deriblandt forskellige problemstillinger og deres løsning, generel vidensforøgelse og fremgang ift læringsmål.\nDette gør jeg for at have et overblik over at jeg gør fremskridt, og for at have et opslagsværk til senere brug."
+                }
+            ];
+            // --- HARDCODED DATA END ---
 
             // Dark Mode Toggle
             const currentTheme = localStorage.getItem('theme');
@@ -61,48 +199,23 @@
                 localStorage.setItem('theme', theme);
             });
 
-
-            if (backupControls) {
-                backupControls.style.display = 'none';
-            }
-
-            if (token) {
-                authControls.innerHTML = `
-                        <a href="create.html" class="create-btn" style="margin-left: 10px;">Opret Nyt Indlæg</a>
-                        <button id="logout-btn" class="action-button delete-btn" style="margin-left: 10px; width: auto;">Log Ud</button>
-                    `;
-                document.getElementById('logout-btn').addEventListener('click', () => {
-                    localStorage.removeItem('accessToken');
-                    location.reload();
-                });
-            } else {
-                authControls.innerHTML = '<a href="login.html" class="create-btn">Login</a>';
-            }
-
-            const apiBaseUrl = 'https://api.longmose-portfolio.duckdns.org/api';
-
-            const fetchEntries = async () => {
-                try {
-                    const response = await fetch(`${apiBaseUrl}/posts`);
-                    if (!response.ok) throw new Error('Network response was not ok');
-                    portfolioEntries = await response.json();
-                    renderEntries();
-                } catch (error) {
-                    console.error('Fetch error:', error);
-                    portfolioList.innerHTML = '<p>Error loading portfolio entries. Try reloading the page!</p>';
-                }
-            };
-
+            // This function replaces the API fetch logic
             const renderEntries = () => {
                 const filteringLogic = entry => {
                     const searchTerm = searchInput.value.toLowerCase();
                     const selectedSubject = filterSubject.value;
                     const startDate = startDateFilter.value;
                     const endDate = endDateFilter.value;
-                    const matchesSearch = searchTerm === '' || entry.title.toLowerCase().includes(searchTerm) || entry.goal.toLowerCase().includes(searchTerm) || (entry.description && entry.description.toLowerCase().includes(searchTerm));
+
+                    const matchesSearch = searchTerm === '' ||
+                        entry.title.toLowerCase().includes(searchTerm) ||
+                        entry.goal.toLowerCase().includes(searchTerm) ||
+                        (entry.description && entry.description.toLowerCase().includes(searchTerm));
+
                     const matchesSubject = selectedSubject === 'all' || entry.subject === selectedSubject;
-                    const entryDate = new Date(entry.date).toISOString().split('T')[0];
+                    const entryDate = entry.date;
                     const matchesDate = (!startDate || entryDate >= startDate) && (!endDate || entryDate <= endDate);
+
                     return matchesSearch && matchesSubject && matchesDate;
                 };
 
@@ -112,30 +225,27 @@
                 filteredEntries.forEach(entry => {
                     const entryElement = document.createElement('div');
                     entryElement.classList.add('portfolio-entry');
-                    entryElement.setAttribute('data-id', entry.id);
-                    const editButtonHtml = token ? `<a href="edit.html?id=${entry.id}" class="edit-btn" title="Rediger Indlæg">Rediger</a>` : '';
 
                     entryElement.innerHTML = `
-                            <div class="entry-header">
-                                <div class="entry-header-info">
-                                    <h3>${entry.title}</h3>
-                                    <div class="entry-meta">
-                                        <span>📅 ${formatDate(new Date(entry.date).toISOString().split('T')[0])}</span>
-                                        <span>${getSubjectIcon(entry.subject)} ${entry.subject}</span>
-                                    </div>
-                                    <div class="entry-goal">
-                                        <div class="entry-section-title">Mål</div>
-                                        <p>${entry.goal.replace(/\n/g, '<br>')}</p>
+                                <div class="entry-header">
+                                    <div class="entry-header-info">
+                                        <h3>${entry.title}</h3>
+                                        <div class="entry-meta">
+                                            <span>📅 ${formatDate(entry.date)}</span>
+                                            <span>${getSubjectIcon(entry.subject)} ${entry.subject}</span>
+                                        </div>
+                                        <div class="entry-goal">
+                                            <div class="entry-section-title">Mål</div>
+                                            <p>${entry.goal.replace(/\n/g, '<br>')}</p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="entry-details">
-                                ${entry.description ? `<div class="entry-section-title">Beskrivelse</div><p>${entry.description.replace(/\n/g, '<br>')}</p>` : ''}
-                                ${entry.code ? `<button class="toggle-btn toggle-content-btn" data-type="code">Vis ${typeTranslations.code}</button><div class="collapsible-content" data-type="code"><pre><code>${entry.code.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre></div>` : ''}
-                                ${entry.picture ? `<button class="toggle-btn toggle-content-btn" data-type="picture">Vis ${typeTranslations.picture}</button><div class="collapsible-content" data-type="picture"><img src="${entry.picture}" alt="${entry.title} Picture"></div>` : ''}
-                                ${entry.video ? `<button class="toggle-btn toggle-content-btn" data-type="video">Vis ${typeTranslations.video}</button><div class="collapsible-content" data-type="video"><video controls src="${entry.video}"></video></div>` : ''}
-                            </div>
-                            <div class="entry-actions">${editButtonHtml}</div>`;
+                                <div class="entry-details">
+                                    ${entry.description ? `<div class="entry-section-title">Beskrivelse</div><p>${entry.description.replace(/\n/g, '<br>')}</p>` : ''}
+                                    ${entry.code ? `<button class="toggle-btn toggle-content-btn" data-type="code">Vis ${typeTranslations.code}</button><div class="collapsible-content" data-type="code"><pre><code>${entry.code.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre></div>` : ''}
+                                    ${entry.picture ? `<button class="toggle-btn toggle-content-btn" data-type="picture">Vis ${typeTranslations.picture}</button><div class="collapsible-content" data-type="picture"><img src="${entry.picture}" alt="${entry.title} Picture"></div>` : ''}
+                                    ${entry.video ? `<button class="toggle-btn toggle-content-btn" data-type="video">Vis ${typeTranslations.video}</button><div class="collapsible-content" data-type="video"><video controls src="${entry.video}"></video></div>` : ''}
+                                </div>`;
                     portfolioList.appendChild(entryElement);
                 });
             };
@@ -178,7 +288,8 @@
             searchInput.addEventListener('input', renderEntries);
             filterSubject.addEventListener('change', renderEntries);
 
-            fetchEntries();
+            // Initial render
+            renderEntries();
         });
     </script>
 </body>
